@@ -324,8 +324,10 @@ committed credentials.
 
 ## Render deployment
 
-`render.yaml` provisions a free Python web service and a free PostgreSQL database. Its pre-deploy
-command creates the schema and synchronizes the Cliniko scheduling catalogue before Uvicorn starts.
+`render.yaml` provisions a free Python web service and a free PostgreSQL database. Because Render's
+free tier does not support pre-deploy commands, its start command runs `clinic-bootstrap` before
+Uvicorn. The bootstrap creates the schema and synchronizes Cliniko scheduling metadata only when the
+persistent PostgreSQL catalogue is empty; ordinary free-tier wake-ups skip the external sync.
 
 1. Push the repository to GitHub without `.env`.
 2. In Render, choose **New → Blueprint** and connect the repository.

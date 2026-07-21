@@ -30,6 +30,7 @@ clinic-api = "clinic_voice.main:run"
 clinic-seed = "clinic_voice.seed:main"
 clinic-eval = "clinic_voice.eval_harness:main"
 clinic-sync = "clinic_voice.sync_cliniko:main"
+clinic-bootstrap = "clinic_voice.deploy:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/clinic_voice"]

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -28,7 +28,7 @@ from clinic_voice.schemas import (
     RetellEventPayload,
     RetellInboundPayload,
 )
-from clinic_voice.security import secure_equals
+from clinic_voice.security import secure_equals, verify_retell_signature
 from clinic_voice.services.appointments import AppointmentService
 from clinic_voice.services.availability import AvailabilityService
 from clinic_voice.services.calls import CallService
@@ -48,8 +48,10 @@ def services(settings: Settings):
     )
 
 
-def verify_secret(
+async def verify_secret(
+    request: Request,
     x_webhook_secret: str | None = Header(default=None),
+    x_retell_signature: str | None = Header(default=None),
     authorization: str | None = Header(default=None),
     settings: Settings = Depends(get_settings),
 ) -> None:
@@ -62,7 +64,10 @@ def verify_secret(
     retell_key_valid = bool(settings.retell_api_key and bearer) and secure_equals(
         bearer, settings.retell_api_key
     )
-    if not shared_secret_valid and not retell_key_valid:
+    signature_valid = verify_retell_signature(
+        await request.body(), settings.retell_api_key, x_retell_signature
+    )
+    if not shared_secret_valid and not retell_key_valid and not signature_valid:
         raise HTTPException(status_code=401, detail="Invalid webhook authentication")
 
 
@@ -233,17 +238,18 @@ def retell_inbound(
     settings: Settings = Depends(get_settings),
 ):
     identity, _, _, calls = services(settings)
-    context = identity.caller_context(db, payload.from_number)
-    call_id = payload.call_id or f"pending:{payload.from_number}:{int(datetime.now().timestamp())}"
+    phone = str(payload.from_number)
+    context = identity.caller_context(db, phone)
+    call_id = payload.call_id or f"pending:{phone}:{int(datetime.now().timestamp())}"
     calls.checkpoint(
         db,
         CheckpointRequest(
             call_id=call_id,
-            phone_e164=payload.from_number,
+            phone_e164=phone,
             state={"inbound_context_loaded": True},
         ),
     )
-    return {
+    response = {
         "dynamic_variables": {
             "caller_status": context.status,
             "returning_patient": str(context.returning_patient).lower(),
@@ -254,6 +260,7 @@ def retell_inbound(
         },
         "metadata": {"internal_call_id": call_id},
     }
+    return {"call_inbound": response} if payload.call_inbound is not None else response
 
 
 @router.post("/webhooks/retell/events", dependencies=[Depends(verify_secret)])

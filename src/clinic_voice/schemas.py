@@ -188,11 +188,23 @@ class FollowupRequestSchema(BaseModel):
 
 
 class RetellInboundPayload(BaseModel):
+    event: str | None = None
+    call_inbound: dict[str, Any] | None = None
     agent_id: str | None = None
-    from_number: str
+    from_number: str | None = None
     to_number: str | None = None
     call_id: str | None = None
     dynamic_variables: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def normalize_current_payload(self) -> RetellInboundPayload:
+        incoming = self.call_inbound or {}
+        self.agent_id = self.agent_id or incoming.get("agent_id")
+        self.from_number = self.from_number or incoming.get("from_number")
+        self.to_number = self.to_number or incoming.get("to_number")
+        if not self.from_number:
+            raise ValueError("from_number is required in call_inbound")
+        return self
 
 
 class RetellEventPayload(BaseModel):

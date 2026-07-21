@@ -209,6 +209,13 @@ A dedicated test number is recommended. Keep the web-call interface as a fallbac
 rental and telephony may not be included in free credits. Do not place outbound calls to numbers you
 do not control.
 
+The inbound webhook belongs to the purchased/imported phone-number configuration and is invoked
+before an inbound call is connected. The event webhook belongs at agent level (or account level, but
+not both) and should subscribe to `call_ended` and `call_analyzed`. Retell signs these webhook bodies
+with `X-Retell-Signature`; the backend verifies the raw request using `RETELL_API_KEY` and a five-minute
+replay window. Use a Retell API key marked for webhook verification. Custom tools are different: they
+continue to authenticate with the generated `X-Webhook-Secret` header.
+
 ## API tools
 
 | Endpoint | Purpose |

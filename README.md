@@ -328,6 +328,8 @@ committed credentials.
 free tier does not support pre-deploy commands, its start command runs `clinic-bootstrap` before
 Uvicorn. The bootstrap creates the schema and synchronizes Cliniko scheduling metadata only when the
 persistent PostgreSQL catalogue is empty; ordinary free-tier wake-ups skip the external sync.
+Render's provider-supplied `postgresql://` connection string is normalized automatically to
+SQLAlchemy's `postgresql+psycopg://` URL so the installed Psycopg 3 driver is used.
 
 1. Push the repository to GitHub without `.env`.
 2. In Render, choose **New → Blueprint** and connect the repository.

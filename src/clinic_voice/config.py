@@ -45,6 +45,16 @@ class Settings(BaseSettings):
 
     request_timeout_seconds: float = Field(default=8.0, ge=1, le=30)
 
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        """Select the installed Psycopg 3 driver for provider-supplied PostgreSQL URLs."""
+        if value.startswith("postgresql://"):
+            return value.replace("postgresql://", "postgresql+psycopg://", 1)
+        if value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql+psycopg://", 1)
+        return value
+
     @field_validator("pms_provider")
     @classmethod
     def validate_pms_provider(cls, value: str) -> str:

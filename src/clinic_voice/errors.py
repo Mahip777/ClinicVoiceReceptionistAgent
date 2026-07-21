@@ -1,0 +1,12 @@
+class DomainError(Exception):
+    def __init__(self, code: str, message: str, status_code: int = 400) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.status_code = status_code
+
+
+class PmsError(DomainError):
+    def __init__(self, code: str, message: str, retryable: bool = True) -> None:
+        super().__init__(code, message, 502)
+        self.retryable = retryable

@@ -1,0 +1,174 @@
+{
+  "base_url_variable": "{{backend_base_url}}",
+  "shared_headers": {
+    "X-Webhook-Secret": "{{webhook_secret}}"
+  },
+  "tools": [
+    {
+      "name": "get_caller_context",
+      "description": "Look up safe returning-patient, shared-phone, dropped-call, and callback context.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/get-caller-context",
+      "parameters": {
+        "type": "object",
+        "required": ["phone_e164"],
+        "properties": {
+          "phone_e164": {"type": "string"},
+          "call_id": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "identify_patient",
+      "description": "Match or create a patient only after the caller states a full name.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/identify-patient",
+      "parameters": {
+        "type": "object",
+        "required": ["phone_e164", "full_name"],
+        "properties": {
+          "phone_e164": {"type": "string"},
+          "full_name": {"type": "string", "description": "At least given and family name"},
+          "call_id": {"type": "string"},
+          "create_if_missing": {"type": "boolean", "default": true}
+        }
+      }
+    },
+    {
+      "name": "search_availability",
+      "description": "Run a fresh live availability search. Call again whenever any scheduling constraint changes.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/search-availability",
+      "parameters": {
+        "type": "object",
+        "required": ["date_from"],
+        "properties": {
+          "call_id": {"type": "string"},
+          "branch_code": {"type": "string"},
+          "practitioner_code": {"type": "string"},
+          "practitioner_name": {"type": "string", "description": "Doctor name exactly as spoken by the caller; preferred when no backend code is known"},
+          "appointment_type_code": {"type": "string"},
+          "appointment_type_name": {"type": "string", "description": "Cliniko appointment type name, such as Standard Appointment or First Appointment"},
+          "specialty": {"type": "string"},
+          "date_from": {"type": "string", "format": "date"},
+          "date_to": {"type": "string", "format": "date"},
+          "preferred_weekdays": {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 6}},
+          "time_window": {
+            "type": "object",
+            "properties": {"start": {"type": "string"}, "end": {"type": "string"}},
+            "required": ["start", "end"]
+          },
+          "around_time": {"type": "string"},
+          "around_minutes": {"type": "integer", "default": 60},
+          "earliest": {"type": "boolean", "default": true},
+          "limit": {"type": "integer", "default": 3}
+        }
+      }
+    },
+    {
+      "name": "book_appointment",
+      "description": "Book a backend-issued offer after full-name identity and explicit spoken confirmation.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/book-appointment",
+      "parameters": {
+        "type": "object",
+        "required": ["phone_e164", "patient_id", "patient_full_name", "offer_id", "idempotency_key"],
+        "properties": {
+          "call_id": {"type": "string"},
+          "phone_e164": {"type": "string"},
+          "patient_id": {"type": "string"},
+          "patient_full_name": {"type": "string"},
+          "offer_id": {"type": "string"},
+          "idempotency_key": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "list_appointments",
+      "description": "List a matched patient's appointments before selecting one to change.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/list-appointments",
+      "parameters": {
+        "type": "object",
+        "required": ["patient_id"],
+        "properties": {
+          "patient_id": {"type": "string"},
+          "include_past": {"type": "boolean", "default": false}
+        }
+      }
+    },
+    {
+      "name": "reschedule_appointment",
+      "description": "Move an active appointment to a freshly offered slot, with policy-based fee confirmation.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/reschedule-appointment",
+      "parameters": {
+        "type": "object",
+        "required": ["appointment_id", "patient_id", "patient_full_name", "new_offer_id", "idempotency_key"],
+        "properties": {
+          "call_id": {"type": "string"},
+          "appointment_id": {"type": "string"},
+          "patient_id": {"type": "string"},
+          "patient_full_name": {"type": "string"},
+          "new_offer_id": {"type": "string"},
+          "idempotency_key": {"type": "string"},
+          "confirm_fee": {"type": "boolean", "default": false}
+        }
+      }
+    },
+    {
+      "name": "cancel_appointment",
+      "description": "Cancel an active appointment, mentioning a fee only when the backend policy requires it.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/cancel-appointment",
+      "parameters": {
+        "type": "object",
+        "required": ["appointment_id", "patient_id", "patient_full_name", "idempotency_key"],
+        "properties": {
+          "call_id": {"type": "string"},
+          "appointment_id": {"type": "string"},
+          "patient_id": {"type": "string"},
+          "patient_full_name": {"type": "string"},
+          "idempotency_key": {"type": "string"},
+          "reason": {"type": "string"},
+          "confirm_fee": {"type": "boolean", "default": false}
+        }
+      }
+    },
+    {
+      "name": "checkpoint",
+      "description": "Persist progress after meaningful state changes so a dropped call can resume.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/checkpoint",
+      "parameters": {
+        "type": "object",
+        "required": ["call_id", "phone_e164", "state"],
+        "properties": {
+          "call_id": {"type": "string"},
+          "phone_e164": {"type": "string"},
+          "patient_id": {"type": "string"},
+          "intent": {"type": "string"},
+          "state": {"type": "object"}
+        }
+      }
+    },
+    {
+      "name": "create_followup",
+      "description": "Log a staff callback for human requests, clinical concerns, out-of-scope issues, or failures.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/create-followup",
+      "parameters": {
+        "type": "object",
+        "required": ["phone_e164", "reason"],
+        "properties": {
+          "call_id": {"type": "string"},
+          "patient_id": {"type": "string"},
+          "phone_e164": {"type": "string"},
+          "reason": {"type": "string", "enum": ["human_requested", "clinical_concern", "out_of_scope", "system_failure"]},
+          "details": {"type": "string"},
+          "priority": {"type": "string", "enum": ["normal", "urgent"]}
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "scenario_id": "en_dec_13_around_1",
+    "language": "English",
+    "intent": "booking",
+    "task_completed": true,
+    "booking_confirmed": true,
+    "completion_turn": 3,
+    "full_name_captured": true,
+    "fresh_search_compliant": true,
+    "spoken_branch_matches_backend": true,
+    "turns": [
+      {"role": "user", "text": "Do you have anything on Dec 13 around 1?", "provided_fields": ["date", "around_time"]},
+      {"role": "agent", "text": "Is this a First Appointment or Standard Appointment?", "asked_for": ["appointment_type"]},
+      {"role": "user", "text": "First Appointment, for Asha Verma.", "provided_fields": ["appointment_type", "full_name"]},
+      {"role": "agent", "text": "I found 1 PM at the North Branch with Dr Nisha Sharma. Should I confirm it?"},
+      {"role": "user", "text": "Yes, confirm it."},
+      {"role": "agent", "text": "Your appointment is confirmed."}
+    ],
+    "latency": {"asr_ms": [210, 225, 205], "llm_ms": [390, 410, 370], "tts_ms": [180, 190, 175], "tool_ms": [120, 245], "network_ms": [80, 95], "end_to_end_ms": [980, 1120, 910]}
+  },
+  {
+    "scenario_id": "hi_booking",
+    "language": "Hindi",
+    "intent": "booking",
+    "task_completed": true,
+    "booking_confirmed": true,
+    "completion_turn": 3,
+    "full_name_captured": true,
+    "fresh_search_compliant": true,
+    "spoken_branch_matches_backend": true,
+    "turns": [
+      {"role": "user", "text": "मुझे गुरुवार सुबह की पहली अपॉइंटमेंट चाहिए।", "provided_fields": ["weekday", "time_window", "appointment_type"]},
+      {"role": "agent", "text": "मरीज़ का पूरा नाम बताइए।", "asked_for": ["full_name"]},
+      {"role": "user", "text": "आशा वर्मा।", "provided_fields": ["full_name"]},
+      {"role": "agent", "text": "दक्षिण शाखा में डॉक्टर निशा शर्मा के साथ सुबह दस बजे का समय है। क्या मैं इसकी पुष्टि कर दूँ?"},
+      {"role": "user", "text": "हाँ, पुष्टि कर दीजिए।"},
+      {"role": "agent", "text": "आपकी अपॉइंटमेंट की पुष्टि हो गई है।"}
+    ],
+    "latency": {"asr_ms": [270, 255, 280], "llm_ms": [420, 440, 405], "tts_ms": [230, 245, 225], "tool_ms": [125, 260], "network_ms": [85, 90], "end_to_end_ms": [1130, 1190, 1080]}
+  }
+]

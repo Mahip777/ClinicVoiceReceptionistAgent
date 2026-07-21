@@ -1,0 +1,199 @@
+{
+  "fixed_test_time": "2026-12-10T13:00:00+05:30",
+  "notes": "Each case is an actual multi-turn caller script. Run prompt-only simulations with function mocks, then run the same scripts against the seeded backend. Replace normalized sample results with exported Retell call results before reporting measured performance.",
+  "cases": [
+    {
+      "id": "en_dec_13_around_1",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Follow the scripted caller turns in order. Do not volunteer information before its turn.",
+      "script": [
+        {"caller": "Do you have anything on Dec 13 around 1?", "expected": ["resolve next non-past Dec 13", "ask only missing service or identity detail"]},
+        {"caller": "It is a first appointment. My name is Asha Verma.", "expected": ["identify patient", "search around 13:00 across eligible branches"]},
+        {"caller": "The North Branch option works.", "expected": ["select exact offer", "ask explicit confirmation"]},
+        {"caller": "Yes, confirm it.", "expected": ["book exact offer", "report confirmed only from tool result"]}
+      ],
+      "success_criteria": ["Asia/Kolkata date resolution", "live search", "full name captured", "spoken branch matches booking"]
+    },
+    {
+      "id": "en_weekday_preferences",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Follow the scripted caller turns in order.",
+      "script": [
+        {"caller": "I need a standard appointment.", "expected": ["ask one missing scheduling constraint"]},
+        {"caller": "Mondays and Wednesdays work well for me.", "expected": ["map weekdays to 0 and 2", "search both branches"]},
+        {"caller": "Give me the earliest one.", "expected": ["globally sort live results", "offer no more than three"]}
+      ],
+      "success_criteria": ["weekdays 0 and 2", "all eligible branches remain open", "no redundant weekday question"]
+    },
+    {
+      "id": "en_after_work",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Follow the scripted caller turns in order.",
+      "script": [
+        {"caller": "I need a first appointment at either branch.", "expected": ["retain both branches"]},
+        {"caller": "In the afternoon after I get off work, around 4:30.", "expected": ["interpret 16:30", "apply 60-minute tolerance"]},
+        {"caller": "The earliest result is fine.", "expected": ["select a returned offer", "ask confirmation"]}
+      ],
+      "success_criteria": ["16:30 interpretation", "live result only", "never reinterpret as 04:30"]
+    },
+    {
+      "id": "en_thursday_morning",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Follow the scripted caller turns in order.",
+      "script": [
+        {"caller": "I need a standard appointment.", "expected": ["ask one scheduling preference"]},
+        {"caller": "Any Thursday morning is great.", "expected": ["weekday 3", "09:00-12:00 window", "fresh search"]},
+        {"caller": "Please use the first option.", "expected": ["use exact offer id", "ask confirmation"]}
+      ],
+      "success_criteria": ["Thursday weekday mapping", "morning window", "fresh live search"]
+    },
+    {
+      "id": "en_shared_family_phone",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Use the shared-family test number and follow the script.",
+      "script": [
+        {"caller": "I want another appointment.", "expected": ["detect ambiguous shared phone", "ask full name before choosing patient"]},
+        {"caller": "Kabir Sharma.", "expected": ["match Kabir rather than Riya", "do not ask name again"]},
+        {"caller": "Thursday morning works.", "expected": ["search without redundant identity question"]}
+      ],
+      "success_criteria": ["name-first disambiguation", "correct patient", "no repeated full-name question"]
+    },
+    {
+      "id": "en_returning_no_context",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Use the returning-patient test number and follow the script.",
+      "script": [
+        {"caller": "I want another appointment.", "expected": ["load returning context", "request full name"]},
+        {"caller": "Asha Verma.", "expected": ["match existing patient", "avoid new-patient treatment"]},
+        {"caller": "The same kind as before, next Thursday morning.", "expected": ["reuse allowed context", "fresh availability search"]}
+      ],
+      "success_criteria": ["returning context used", "full name still captured", "not anonymous"]
+    },
+    {
+      "id": "en_missed_callback",
+      "language": "English",
+      "intent": "reschedule",
+      "user_prompt": "Use the callback test number and follow the script.",
+      "script": [
+        {"caller": "I got a call from this number.", "expected": ["retrieve callback purpose", "acknowledge missed outbound call"]},
+        {"caller": "This is Imran Khan.", "expected": ["identify patient", "continue original purpose"]},
+        {"caller": "Wednesday afternoon would work instead.", "expected": ["search new slot", "do not restart cold"]}
+      ],
+      "success_criteria": ["callback recognized", "original reschedule context retained", "no cold restart"]
+    },
+    {
+      "id": "en_stale_availability",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Follow the scripted caller turns and change preference after the first offers.",
+      "script": [
+        {"caller": "I need a first appointment Thursday morning.", "expected": ["first live search", "offer returned slots"]},
+        {"caller": "Actually, Wednesday around 4:30 is better.", "expected": ["discard earlier offers", "second live search at 16:30"]},
+        {"caller": "I will take the first new option.", "expected": ["use only second-search offer id", "ask confirmation"]}
+      ],
+      "success_criteria": ["at least two searches", "old offer not reused", "latest constraints preserved"]
+    },
+    {
+      "id": "en_slot_race",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Configure the first booking attempt to return SLOT_NO_LONGER_AVAILABLE, then follow the script.",
+      "script": [
+        {"caller": "I need the earliest available first appointment.", "expected": ["live cross-branch search", "offer options"]},
+        {"caller": "The first one. Yes, confirm it.", "expected": ["attempt exact offer", "do not claim confirmation after race failure"]},
+        {"caller": "Use the first fresh alternative and confirm it.", "expected": ["use fresh alternative offer id", "confirm only on successful tool result"]}
+      ],
+      "success_criteria": ["failed slot not confirmed", "brief apology", "fresh alternative used"]
+    },
+    {
+      "id": "en_human_request",
+      "language": "English",
+      "intent": "followup",
+      "user_prompt": "Follow the scripted caller turns in order.",
+      "script": [
+        {"caller": "Am I speaking to a bot or a person?", "expected": ["truthfully disclose automation"]},
+        {"caller": "I want to speak with a human.", "expected": ["create follow-up request", "promise callback only"]}
+      ],
+      "success_criteria": ["truthful identity", "follow-up tool called", "no fake live transfer"]
+    },
+    {
+      "id": "hi_booking",
+      "language": "Hindi",
+      "intent": "booking",
+      "user_prompt": "सभी कॉलर चरण क्रम से बोलें और पूरी बातचीत हिंदी में रखें।",
+      "script": [
+        {"caller": "मुझे पहली अपॉइंटमेंट बुक करनी है।", "expected": ["हिंदी में एक आवश्यक प्रश्न पूछे"]},
+        {"caller": "मेरा नाम आशा वर्मा है और गुरुवार सुबह ठीक रहेगा।", "expected": ["पूरा नाम पहचाने", "गुरुवार सुबह की लाइव खोज करे"]},
+        {"caller": "पहला विकल्प ठीक है।", "expected": ["सटीक ऑफर चुने", "पुष्टि मांगे"]},
+        {"caller": "हाँ, बुक कर दीजिए।", "expected": ["बुकिंग टूल चलाए", "सफल परिणाम के बाद ही पुष्टि करे"]}
+      ],
+      "success_criteria": ["हिंदी प्रतिक्रिया", "पूरा नाम", "लाइव ऑफर", "अनावश्यक अंग्रेज़ी वाक्य नहीं"]
+    },
+    {
+      "id": "hi_reschedule_fee",
+      "language": "Hindi",
+      "intent": "reschedule",
+      "user_prompt": "सभी कॉलर चरण क्रम से बोलें। परीक्षण अपॉइंटमेंट शुल्क विंडो के अंदर रखें।",
+      "script": [
+        {"caller": "मुझे अपनी अपॉइंटमेंट बदलनी है।", "expected": ["नाम और अपॉइंटमेंट पहचाने"]},
+        {"caller": "इसे कल दोपहर कर दीजिए।", "expected": ["नई लाइव उपलब्धता खोजे", "नीति परिणाम से पहले शुल्क न बोले"]},
+        {"caller": "अगर शुल्क लगेगा तो पहले बताइए।", "expected": ["केवल FEE_CONFIRMATION_REQUIRED पर शुल्क बताए", "सहमति मांगे"]},
+        {"caller": "हाँ, मैं सहमत हूँ।", "expected": ["confirm_fee के साथ दोबारा कॉल करे"]}
+      ],
+      "success_criteria": ["नीति-आधारित शुल्क", "स्पष्ट सहमति", "विफलता पर मूल अपॉइंटमेंट सुरक्षित"]
+    },
+    {
+      "id": "codeswitch_hi_to_en",
+      "language": "Code-switch",
+      "intent": "booking",
+      "user_prompt": "Follow the scripted Hinglish caller turns naturally.",
+      "script": [
+        {"caller": "Mujhe first appointment chahiye.", "expected": ["respond naturally in Hinglish"]},
+        {"caller": "Thursday morning, preferably South Branch mein.", "expected": ["preserve branch and time constraints", "live search"]},
+        {"caller": "First option works, please confirm kar do.", "expected": ["explicit confirmation handling", "no duplicated translation"]}
+      ],
+      "success_criteria": ["natural code-switch", "branch constraint retained", "no stitched duplicate translation"]
+    },
+    {
+      "id": "codeswitch_en_to_hi",
+      "language": "Code-switch",
+      "intent": "booking",
+      "user_prompt": "Follow the scripted mixed-language caller turns naturally.",
+      "script": [
+        {"caller": "I need a first appointment.", "expected": ["ask one missing constraint"]},
+        {"caller": "Kisi bhi doctor ke saath, lekin sirf subah ka time chahiye.", "expected": ["search all eligible doctors", "09:00-12:00"]},
+        {"caller": "The earliest वाला option बता दीजिए।", "expected": ["offer global earliest result", "natural mixed response"]}
+      ],
+      "success_criteria": ["bidirectional code-switch", "morning constraint", "global earliest search"]
+    },
+    {
+      "id": "dropped_call_resume",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Use the dropped-call test number. Treat the first script step as a new callback after disconnection.",
+      "script": [
+        {"caller": "The call dropped. Can we continue?", "expected": ["acknowledge drop", "restore Thursday-morning checkpoint"]},
+        {"caller": "Yes, please show the options again.", "expected": ["freshen availability", "do not restart identity intake"]},
+        {"caller": "The first available one is fine.", "expected": ["select exact fresh offer", "ask confirmation"]}
+      ],
+      "success_criteria": ["drop acknowledged", "saved constraints restored", "no restart"]
+    },
+    {
+      "id": "clinical_concern",
+      "language": "English",
+      "intent": "followup",
+      "user_prompt": "Follow the scripted caller turns in order.",
+      "script": [
+        {"caller": "I have severe chest pain. Which doctor should I book?", "expected": ["do not diagnose", "advise urgent or emergency care"]},
+        {"caller": "Can clinic staff call me too?", "expected": ["create urgent follow-up", "set callback expectation"]}
+      ],
+      "success_criteria": ["no diagnosis", "urgent follow-up logged", "urgent-care guidance"]
+    }
+  ]
+}

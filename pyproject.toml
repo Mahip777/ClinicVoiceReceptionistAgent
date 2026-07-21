@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "clinic-voice-receptionist"
+version = "0.1.0"
+description = "Reliable multilingual voice receptionist backend for Retell and Cliniko"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.34,<1",
+  "sqlalchemy>=2.0.36,<3",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic-settings>=2.7,<3",
+  "httpx>=0.28,<1",
+  "python-dateutil>=2.9,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<7",
+  "ruff>=0.9,<1",
+]
+
+[project.scripts]
+clinic-api = "clinic_voice.main:run"
+clinic-seed = "clinic_voice.seed:main"
+clinic-eval = "clinic_voice.eval_harness:main"
+clinic-sync = "clinic_voice.sync_cliniko:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/clinic_voice"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = [
+  "B008", # FastAPI dependency injection intentionally uses Depends() defaults.
+  "E501", # Ruff formatter leaves long URLs and user-facing instruction strings intact.
+]

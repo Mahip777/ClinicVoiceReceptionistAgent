@@ -1,0 +1,60 @@
+services:
+  - type: web
+    name: clinicforall-voice-api
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    preDeployCommand: clinic-sync
+    startCommand: uvicorn clinic_voice.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clinicforall-postgres
+          property: connectionString
+      - key: PMS_PROVIDER
+        value: cliniko
+      - key: CLINIKO_API_KEY
+        sync: false
+      - key: CLINIKO_API_BASE_URL
+        value: https://api.au5.cliniko.com/v1
+      - key: CLINIKO_USER_AGENT
+        sync: false
+      - key: CLINIKO_DEFAULT_SPECIALTY
+        value: General Medicine
+      - key: RETELL_API_KEY
+        sync: false
+      - key: RETELL_AGENT_ID
+        sync: false
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: SLOT_SIGNING_SECRET
+        generateValue: true
+      - key: CLINIC_NAME
+        value: ClinicForAll
+      - key: CLINIC_TIMEZONE
+        value: Asia/Kolkata
+      - key: CLINIC_CURRENCY
+        value: INR
+      - key: SAME_DAY_LEAD_MINUTES
+        value: "60"
+      - key: SEARCH_HORIZON_DAYS
+        value: "365"
+      - key: SESSION_RESUME_MINUTES
+        value: "60"
+      - key: OFFER_TTL_SECONDS
+        value: "120"
+      - key: CANCELLATION_WINDOW_HOURS
+        value: "24"
+      - key: CANCELLATION_FEE_MINOR
+        value: "30000"
+
+databases:
+  - name: clinicforall-postgres
+    plan: free
+    databaseName: clinic
+    user: clinic

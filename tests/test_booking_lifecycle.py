@@ -10,7 +10,9 @@ from clinic_voice.schemas import (
     AvailabilityRequest,
     BookingRequest,
     CancelRequest,
+    CheckpointRequest,
 )
+from clinic_voice.services.calls import CallService
 
 from .helpers import FIXED_NOW, patient_by_phone, service_bundle
 
@@ -55,6 +57,75 @@ def test_booking_requires_full_name_and_confirms_persisted_branch():
         assert result.status == "confirmed"
         assert result.appointment.branch_code == slot.branch_code
         assert result.appointment.pms_sync_status == "synced"
+
+
+def test_live_call_booking_requires_confirmation_after_exact_offer_selection():
+    settings, _, _, availability, appointments = service_bundle()
+    calls = CallService()
+    with SessionLocal() as db:
+        patient = patient_by_phone(db, settings.test_phone_returning)
+        slot = offered_slot(db, availability)
+        calls.checkpoint(
+            db,
+            CheckpointRequest(
+                call_id="confirmation-gate-call",
+                phone_e164=settings.test_phone_returning,
+                patient_id=patient.id,
+                intent="booking",
+                state={"stage": "slot_selected", "selected_offer_id": slot.offer_id},
+            ),
+        )
+        request = BookingRequest(
+            call_id="confirmation-gate-call",
+            phone_e164=settings.test_phone_returning,
+            patient_id=patient.id,
+            patient_full_name="Asha Verma",
+            caller_full_name="Asha Verma",
+            booking_for="self",
+            offer_id=slot.offer_id,
+            idempotency_key="confirmation-gate-booking",
+        )
+        with pytest.raises(DomainError, match="Do not book yet") as error:
+            appointments.book(db, request)
+        assert error.value.code == "EXPLICIT_CONFIRMATION_REQUIRED"
+
+        calls.checkpoint(
+            db,
+            CheckpointRequest(
+                call_id="confirmation-gate-call",
+                phone_e164=settings.test_phone_returning,
+                patient_id=patient.id,
+                intent="booking",
+                state={
+                    "stage": "booking_confirmed",
+                    "confirmed_offer_id": slot.offer_id,
+                    "explicit_confirmation": True,
+                },
+            ),
+        )
+        result = appointments.book(db, request)
+        assert result.status == "confirmed"
+
+
+def test_booking_for_someone_else_cannot_reuse_the_callers_identity():
+    settings, _, _, availability, appointments = service_bundle()
+    with SessionLocal() as db:
+        patient = patient_by_phone(db, settings.test_phone_returning)
+        slot = offered_slot(db, availability)
+        with pytest.raises(DomainError) as error:
+            appointments.book(
+                db,
+                BookingRequest(
+                    phone_e164=settings.test_phone_returning,
+                    patient_id=patient.id,
+                    patient_full_name="Asha Verma",
+                    caller_full_name="Asha Verma",
+                    booking_for="other",
+                    offer_id=slot.offer_id,
+                    idempotency_key="wrong-booking-subject",
+                ),
+            )
+        assert error.value.code == "BOOKING_SUBJECT_MISMATCH"
 
 
 def test_slot_taken_after_offer_returns_fresh_alternatives():

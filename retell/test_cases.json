@@ -3,6 +3,19 @@
   "notes": "Each case is an actual multi-turn caller script. Run prompt-only simulations with function mocks, then run the same scripts against the seeded backend. Replace normalized sample results with exported Retell call results before reporting measured performance.",
   "cases": [
     {
+      "id": "en_booking_for_another_patient",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "The caller and appointment patient are different people. Keep both identities separate.",
+      "script": [
+        {"caller": "I am Shuvan Sharma and I want to book for John Doe.", "expected": ["retain both full names", "identify Shuvan as caller", "identify John as appointment patient", "do not ask either supplied name again"]},
+        {"caller": "It is his first visit and I want the earliest available.", "expected": ["use John patient_id", "omit date_from", "do not ask for time preference", "search global earliest"]},
+        {"caller": "Use Dr John Doe.", "expected": ["keep patient John and practitioner Dr John as separate entities", "summarize exact slot", "ask explicit confirmation"]},
+        {"caller": "Yes, confirm that booking.", "expected": ["checkpoint booking_confirmed for exact offer", "book for patient John Doe", "confirm only from successful result"]}
+      ],
+      "success_criteria": ["caller and patient identities remain distinct", "no redundant identity question", "clinic-local earliest search", "post-selection explicit confirmation"]
+    },
+    {
       "id": "en_unsupported_specialty_early_exit",
       "language": "English",
       "intent": "booking",

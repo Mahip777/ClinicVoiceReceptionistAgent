@@ -12,6 +12,7 @@ from clinic_voice.models import (
     Appointment,
     AppointmentType,
     Branch,
+    CallSession,
     FollowupRequest,
     IdempotencyRecord,
     OfferedSlot,
@@ -57,6 +58,9 @@ class AppointmentService:
         )
         if existing:
             return self._booking_response(db, existing, "IDEMPOTENT_REPLAY")
+
+        self._validate_booking_subject(request)
+        self._require_explicit_confirmation(db, request)
 
         patient = self._verified_patient(
             db, request.patient_id, request.patient_full_name, request.phone_e164
@@ -151,6 +155,7 @@ class AppointmentService:
                 db, request.idempotency_key, "book", request.model_dump_json(), response
             )
             return response
+
         except PmsError as exc:
             appointment.status = "pending_sync"
             appointment.pms_sync_status = "failed"
@@ -196,6 +201,46 @@ class AppointmentService:
                 db, request.idempotency_key, "book", request.model_dump_json(), response
             )
             return response
+
+    def _validate_booking_subject(self, request: BookingRequest) -> None:
+        caller_name = normalize_name(request.caller_full_name or "")
+        patient_name = normalize_name(request.patient_full_name)
+        if request.booking_for == "other":
+            if not caller_name:
+                raise DomainError(
+                    "CALLER_FULL_NAME_REQUIRED",
+                    "Capture the caller's full name separately before booking for another patient.",
+                )
+            if caller_name == patient_name:
+                raise DomainError(
+                    "BOOKING_SUBJECT_MISMATCH",
+                    "The caller and appointment patient were confused. Identify the intended patient before booking.",
+                )
+        elif caller_name and caller_name != patient_name:
+            raise DomainError(
+                "BOOKING_SUBJECT_MISMATCH",
+                "The caller name differs from the appointment patient. Set booking_for=other and identify that patient.",
+            )
+
+    def _require_explicit_confirmation(self, db: Session, request: BookingRequest) -> None:
+        """Protect live voice calls from booking on a slot-selection utterance."""
+        if not request.call_id:
+            return
+        session = db.scalar(select(CallSession).where(CallSession.call_id == request.call_id))
+        state = session.checkpoint if session else {}
+        if (
+            state.get("stage") != "booking_confirmed"
+            or state.get("confirmed_offer_id") != request.offer_id
+            or state.get("explicit_confirmation") is not True
+        ):
+            raise DomainError(
+                "EXPLICIT_CONFIRMATION_REQUIRED",
+                (
+                    "Do not book yet. Speak the selected date, time, doctor, and branch, ask whether "
+                    "to confirm, wait for a new caller response, then checkpoint stage=booking_confirmed "
+                    "with this offer_id and explicit_confirmation=true."
+                ),
+            )
 
     def reschedule(self, db: Session, request: RescheduleRequest) -> ChangeResponse:
         if replay := self._replay(

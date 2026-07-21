@@ -31,6 +31,7 @@ class IdentifyPatientRequest(BaseModel):
     full_name: str = Field(min_length=2, max_length=255)
     call_id: str | None = None
     create_if_missing: bool = True
+    subject_role: Literal["caller", "appointment_patient"] = "appointment_patient"
 
 
 class IdentifyPatientResponse(BaseModel):
@@ -59,7 +60,7 @@ class AvailabilityRequest(BaseModel):
     appointment_type_code: str | None = None
     appointment_type_name: str | None = None
     specialty: str | None = None
-    date_from: date
+    date_from: date | None = None
     date_to: date | None = None
     preferred_weekdays: list[int] = Field(default_factory=list)
     time_window: TimeWindow | None = None
@@ -70,7 +71,7 @@ class AvailabilityRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_dates(self) -> AvailabilityRequest:
-        if self.date_to and self.date_to < self.date_from:
+        if self.date_to and self.date_from and self.date_to < self.date_from:
             raise ValueError("date_to must not precede date_from")
         if any(day < 0 or day > 6 for day in self.preferred_weekdays):
             raise ValueError("preferred_weekdays use Monday=0 through Sunday=6")
@@ -143,6 +144,8 @@ class BookingRequest(BaseModel):
     phone_e164: str
     patient_id: str
     patient_full_name: str = Field(min_length=2, max_length=255)
+    caller_full_name: str | None = Field(default=None, min_length=2, max_length=255)
+    booking_for: Literal["self", "other"] = "self"
     offer_id: str
     idempotency_key: str = Field(min_length=8, max_length=255)
 

@@ -60,12 +60,28 @@ requires a matched patient ID and a full name containing at least two name compo
 match the patient record. If several patients share a phone, the caller must state a full name before
 one is selected.
 
+Caller identity and appointment-patient identity are tracked separately. For a booking made on
+behalf of someone else, the actual patient is matched or created under the shared phone before any
+write. The booking endpoint rejects `booking_for=other` when the caller identity has accidentally
+been reused as the appointment patient.
+
 ### No stale availability
 
 Every search creates a new `availability_searches` record and short-lived `offered_slots`. The agent
 can book only with an `offer_id`; it cannot submit a hallucinated time. Booking re-runs the relevant
 Cliniko availability query before writing. Any change to date, time, weekday, doctor, specialty, or
 branch requires a fresh search.
+
+An omitted `date_from` means today's date in the configured clinic timezone. Retell therefore omits
+the date for "earliest" or "from now" instead of calculating a UTC date that may already be yesterday
+in the clinic.
+
+### Confirmation gate
+
+For live calls carrying a `call_id`, selecting an offer is insufficient authorization to book. After
+speaking the exact date, time, doctor, and branch, the agent must wait for a new explicit caller
+approval and checkpoint `stage=booking_confirmed` with the same offer ID. The booking endpoint rejects
+missing, stale, or mismatched confirmation checkpoints with `EXPLICIT_CONFIRMATION_REQUIRED`.
 
 ### Cross-branch earliest search
 

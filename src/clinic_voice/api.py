@@ -110,13 +110,18 @@ def identify_patient(
     identity, _, _, calls = services(settings)
     result = identity.identify(db, payload.phone_e164, payload.full_name, payload.create_if_missing)
     if payload.call_id and result.patient_id:
+        role = payload.subject_role
         calls.checkpoint(
             db,
             CheckpointRequest(
                 call_id=payload.call_id,
                 phone_e164=payload.phone_e164,
-                patient_id=result.patient_id,
-                state={"full_name_captured": True, "patient_id": result.patient_id},
+                patient_id=result.patient_id if role == "appointment_patient" else None,
+                state={
+                    f"{role}_full_name_captured": True,
+                    f"{role}_patient_id": result.patient_id,
+                    f"{role}_full_name": payload.full_name,
+                },
             ),
         )
     return result

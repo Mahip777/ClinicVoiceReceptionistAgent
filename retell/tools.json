@@ -20,17 +20,18 @@
     },
     {
       "name": "identify_patient",
-      "description": "Match or create a patient only after the caller states a full name.",
+      "description": "Match or create either the caller or the actual appointment patient after their full name is known. Keep those roles separate when booking for someone else.",
       "method": "POST",
       "url": "{{backend_base_url}}/v1/tools/identify-patient",
       "parameters": {
         "type": "object",
-        "required": ["phone_e164", "full_name"],
+        "required": ["phone_e164", "full_name", "subject_role"],
         "properties": {
           "phone_e164": {"type": "string"},
           "full_name": {"type": "string", "description": "At least given and family name"},
           "call_id": {"type": "string"},
-          "create_if_missing": {"type": "boolean", "default": true}
+          "create_if_missing": {"type": "boolean", "default": true},
+          "subject_role": {"type": "string", "enum": ["caller", "appointment_patient"], "description": "Use caller for the person speaking and appointment_patient for the person whose Cliniko appointment will be written"}
         }
       }
     },
@@ -51,7 +52,7 @@
       "url": "{{backend_base_url}}/v1/tools/search-availability",
       "parameters": {
         "type": "object",
-        "required": ["date_from"],
+        "required": [],
         "properties": {
           "call_id": {"type": "string"},
           "branch_code": {"type": "string"},
@@ -60,7 +61,7 @@
           "appointment_type_code": {"type": "string"},
           "appointment_type_name": {"type": "string", "description": "Cliniko appointment type name, such as Standard Appointment or First Appointment"},
           "specialty": {"type": "string"},
-          "date_from": {"type": "string", "format": "date"},
+          "date_from": {"type": "string", "format": "date", "description": "Omit for earliest/from now so the backend uses today's date in the clinic timezone"},
           "date_to": {"type": "string", "format": "date"},
           "preferred_weekdays": {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 6}},
           "time_window": {
@@ -77,17 +78,19 @@
     },
     {
       "name": "book_appointment",
-      "description": "Book a backend-issued offer after full-name identity and explicit spoken confirmation.",
+      "description": "Book a backend-issued offer only after the exact offer has a booking_confirmed checkpoint from a new explicit caller response.",
       "method": "POST",
       "url": "{{backend_base_url}}/v1/tools/book-appointment",
       "parameters": {
         "type": "object",
-        "required": ["phone_e164", "patient_id", "patient_full_name", "offer_id", "idempotency_key"],
+        "required": ["phone_e164", "patient_id", "patient_full_name", "caller_full_name", "booking_for", "offer_id", "idempotency_key"],
         "properties": {
           "call_id": {"type": "string"},
           "phone_e164": {"type": "string"},
           "patient_id": {"type": "string"},
           "patient_full_name": {"type": "string"},
+          "caller_full_name": {"type": "string", "description": "Full name of the person speaking"},
+          "booking_for": {"type": "string", "enum": ["self", "other"]},
           "offer_id": {"type": "string"},
           "idempotency_key": {"type": "string"}
         }

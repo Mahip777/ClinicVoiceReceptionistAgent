@@ -116,8 +116,9 @@ class AvailabilityService:
     def search(self, db: Session, request: AvailabilityRequest) -> AvailabilityResponse:
         now = self.now_fn()
         local_now = now.astimezone(self.settings.timezone)
-        date_to = request.date_to or request.date_from
-        if request.date_from < local_now.date():
+        date_from = request.date_from or local_now.date()
+        date_to = request.date_to or date_from
+        if date_from < local_now.date():
             raise DomainError("DATE_IN_PAST", "Availability cannot be searched in the past.")
         max_date = local_now.date() + timedelta(days=self.settings.search_horizon_days)
         if date_to > max_date:
@@ -282,7 +283,7 @@ class AvailabilityService:
                 branch,
                 practitioner,
                 appointment_type,
-                request.date_from,
+                date_from,
                 date_to,
             )
             return pair, slots

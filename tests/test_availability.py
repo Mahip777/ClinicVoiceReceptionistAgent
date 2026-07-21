@@ -48,6 +48,25 @@ def test_earliest_search_compares_all_eligible_branches_and_practitioners():
         assert result.slots[0].practitioner_code == "DR_GENERAL_2"
 
 
+def test_earliest_without_a_date_uses_clinic_local_today():
+    _, _, _, availability, _ = service_bundle()
+    with SessionLocal() as db:
+        result = availability.search(
+            db,
+            AvailabilityRequest(
+                specialty="General Medicine",
+                appointment_type_code="GENERAL_NEW",
+                earliest=True,
+            ),
+        )
+
+    assert result.status == "available"
+    assert all(
+        slot.starts_at.astimezone(service_bundle()[0].timezone).date() >= date(2026, 12, 10)
+        for slot in result.slots
+    )
+
+
 def test_branch_specific_specialty_is_deterministic():
     _, _, _, availability, _ = service_bundle()
     with SessionLocal() as db:

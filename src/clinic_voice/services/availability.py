@@ -21,6 +21,10 @@ from clinic_voice.pms import PmsAdapter, PmsSlot
 from clinic_voice.schemas import (
     AvailabilityRequest,
     AvailabilityResponse,
+    CatalogAppointmentType,
+    CatalogBranch,
+    CatalogPractitioner,
+    ClinicCatalogResponse,
     SlotResult,
 )
 from clinic_voice.security import normalize_name
@@ -31,6 +35,83 @@ class AvailabilityService:
         self.settings = settings
         self.pms = pms
         self.now_fn = now_fn or (lambda: datetime.now(UTC))
+
+    def catalog(self, db: Session) -> ClinicCatalogResponse:
+        """Return the active, synchronized scheduling catalogue without internal IDs."""
+        branches = db.scalars(
+            select(Branch).where(Branch.active.is_(True)).order_by(Branch.display_name)
+        ).all()
+        practitioners = db.scalars(
+            select(Practitioner)
+            .where(Practitioner.active.is_(True))
+            .order_by(Practitioner.display_name)
+        ).all()
+        appointment_types = db.scalars(
+            select(AppointmentType)
+            .where(AppointmentType.active.is_(True))
+            .order_by(AppointmentType.display_name)
+        ).all()
+        active_branch_ids = {item.id for item in branches}
+        active_type_ids = {item.id for item in appointment_types}
+        branch_codes = {item.id: item.code for item in branches}
+        type_codes = {item.id: item.code for item in appointment_types}
+        practitioner_branch_codes: dict[str, list[str]] = {
+            item.id: [] for item in practitioners
+        }
+        practitioner_type_codes: dict[str, list[str]] = {
+            item.id: [] for item in practitioners
+        }
+        active_practitioner_ids = set(practitioner_branch_codes)
+        for link in db.scalars(select(PractitionerBranch)).all():
+            if (
+                link.practitioner_id in active_practitioner_ids
+                and link.branch_id in active_branch_ids
+            ):
+                practitioner_branch_codes[link.practitioner_id].append(
+                    branch_codes[link.branch_id]
+                )
+        for link in db.scalars(select(PractitionerAppointmentType)).all():
+            if (
+                link.practitioner_id in active_practitioner_ids
+                and link.appointment_type_id in active_type_ids
+            ):
+                practitioner_type_codes[link.practitioner_id].append(
+                    type_codes[link.appointment_type_id]
+                )
+        specialties = sorted(
+            {
+                item.specialty
+                for item in [*practitioners, *appointment_types]
+                if item.specialty.strip()
+            },
+            key=str.casefold,
+        )
+        return ClinicCatalogResponse(
+            specialties=specialties,
+            branches=[CatalogBranch(code=item.code, name=item.display_name) for item in branches],
+            practitioners=[
+                CatalogPractitioner(
+                    code=item.code,
+                    name=item.spoken_name,
+                    specialty=item.specialty,
+                    branch_codes=sorted(practitioner_branch_codes[item.id]),
+                    appointment_type_codes=sorted(practitioner_type_codes[item.id]),
+                )
+                for item in practitioners
+            ],
+            appointment_types=[
+                CatalogAppointmentType(
+                    code=item.code,
+                    name=item.display_name,
+                    specialty=item.specialty,
+                )
+                for item in appointment_types
+            ],
+            instruction=(
+                "Use only this live catalogue. If the requested specialty, doctor, service, or "
+                "branch is absent, say so before collecting scheduling constraints."
+            ),
+        )
 
     def search(self, db: Session, request: AvailabilityRequest) -> AvailabilityResponse:
         now = self.now_fn()
@@ -49,8 +130,24 @@ class AvailabilityService:
         appointment_types = db.scalars(
             select(AppointmentType).where(AppointmentType.active.is_(True))
         ).all()
+        all_branches = list(branches)
+        all_practitioners = list(practitioners)
+        all_appointment_types = list(appointment_types)
         if request.branch_code:
-            branches = [item for item in branches if item.code == request.branch_code]
+            branches = [
+                item
+                for item in branches
+                if item.code.casefold() == request.branch_code.casefold()
+            ]
+            if not branches:
+                return self._empty(
+                    db,
+                    request,
+                    now,
+                    "UNKNOWN_BRANCH",
+                    "That branch is not in the active clinic catalogue.",
+                    [item.display_name for item in all_branches],
+                )
         if request.practitioner_code:
             practitioners = [
                 item
@@ -63,28 +160,90 @@ class AvailabilityService:
                 request.practitioner_name,
                 lambda item: (item.display_name, item.spoken_name),
             )
+        if (request.practitioner_code or request.practitioner_name) and not practitioners:
+            return self._empty(
+                db,
+                request,
+                now,
+                "UNKNOWN_PRACTITIONER",
+                "That doctor is not in the active clinic catalogue.",
+                [item.spoken_name for item in all_practitioners],
+            )
         if request.specialty:
-            specialty = request.specialty.casefold()
+            specialty = normalize_name(request.specialty)
+            specialty_practitioners = [
+                item
+                for item in all_practitioners
+                if normalize_name(item.specialty) == specialty
+            ]
+            specialty_appointment_types = [
+                item
+                for item in all_appointment_types
+                if normalize_name(item.specialty) == specialty
+            ]
+            supported_specialties = sorted(
+                {
+                    item.specialty
+                    for item in [*all_practitioners, *all_appointment_types]
+                    if item.specialty.strip()
+                },
+                key=str.casefold,
+            )
+            if not specialty_practitioners or not specialty_appointment_types:
+                return self._empty(
+                    db,
+                    request,
+                    now,
+                    "UNSUPPORTED_SPECIALTY",
+                    (
+                        f"The clinic does not currently offer {request.specialty}. "
+                        "State this immediately and offer a supported specialty or staff follow-up."
+                    ),
+                    supported_specialties,
+                )
+            specialty_practitioner_ids = {item.id for item in specialty_practitioners}
+            specialty_type_ids = {item.id for item in specialty_appointment_types}
             practitioners = [
-                item for item in practitioners if item.specialty.casefold() == specialty
+                item for item in practitioners if item.id in specialty_practitioner_ids
             ]
             appointment_types = [
-                item for item in appointment_types if item.specialty.casefold() == specialty
+                item for item in appointment_types if item.id in specialty_type_ids
             ]
         if request.appointment_type_code:
+            globally_matching_types = [
+                item
+                for item in all_appointment_types
+                if item.code.casefold() == request.appointment_type_code.casefold()
+            ]
             appointment_types = [
                 item
                 for item in appointment_types
                 if item.code.casefold() == request.appointment_type_code.casefold()
             ]
         elif request.appointment_type_name:
+            globally_matching_types = self._match_named(
+                all_appointment_types,
+                request.appointment_type_name,
+                lambda item: (item.display_name,),
+            )
             appointment_types = self._match_named(
                 appointment_types,
                 request.appointment_type_name,
                 lambda item: (item.display_name,),
             )
-        if not branches or not practitioners or not appointment_types:
-            return self._empty(db, request, now, "No matching branch, doctor, or service exists.")
+        else:
+            globally_matching_types = all_appointment_types
+        if (
+            request.appointment_type_code or request.appointment_type_name
+        ) and not globally_matching_types:
+            return self._empty(
+                db,
+                request,
+                now,
+                "UNKNOWN_APPOINTMENT_TYPE",
+                "That appointment type is not in the active clinic catalogue.",
+                [item.display_name for item in all_appointment_types],
+            )
 
         branch_links = {
             (item.practitioner_id, item.branch_id)
@@ -103,6 +262,18 @@ class AvailabilityService:
                     if (practitioner.id, appointment_type.id) not in type_links:
                         continue
                     eligible_pairs.append((branch, practitioner, appointment_type))
+
+        if not eligible_pairs:
+            return self._empty(
+                db,
+                request,
+                now,
+                "INELIGIBLE_COMBINATION",
+                (
+                    "Those clinic items exist, but that doctor, service, and branch combination "
+                    "is not configured. Ask which preference may be changed."
+                ),
+            )
 
         def load(pair):
             branch, practitioner, appointment_type = pair
@@ -171,6 +342,7 @@ class AvailabilityService:
         if not results:
             return AvailabilityResponse(
                 status="unavailable",
+                code="NO_AVAILABLE_SLOTS",
                 search_id=search.id,
                 searched_at=now,
                 slots=[],
@@ -178,6 +350,7 @@ class AvailabilityService:
             )
         return AvailabilityResponse(
             status="available",
+            code="OK",
             search_id=search.id,
             searched_at=now,
             slots=results,
@@ -221,7 +394,13 @@ class AvailabilityService:
         return True
 
     def _empty(
-        self, db: Session, request: AvailabilityRequest, now: datetime, instruction: str
+        self,
+        db: Session,
+        request: AvailabilityRequest,
+        now: datetime,
+        code: str,
+        instruction: str,
+        suggestions: list[str] | None = None,
     ) -> AvailabilityResponse:
         search = AvailabilitySearch(
             call_id=request.call_id,
@@ -232,9 +411,11 @@ class AvailabilityService:
         db.commit()
         return AvailabilityResponse(
             status="unavailable",
+            code=code,
             search_id=search.id,
             searched_at=now,
             slots=[],
+            suggestions=suggestions or [],
             instruction=instruction,
         )
 

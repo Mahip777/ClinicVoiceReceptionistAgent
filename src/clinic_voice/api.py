@@ -19,6 +19,7 @@ from clinic_voice.schemas import (
     CancelRequest,
     ChangeResponse,
     CheckpointRequest,
+    ClinicCatalogResponse,
     FollowupRequestSchema,
     IdentifyPatientRequest,
     IdentifyPatientResponse,
@@ -119,6 +120,19 @@ def identify_patient(
             ),
         )
     return result
+
+
+@router.post(
+    "/v1/tools/get-clinic-catalog",
+    response_model=ClinicCatalogResponse,
+    dependencies=[Depends(verify_secret)],
+)
+def get_clinic_catalog(
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+):
+    _, availability, _, _ = services(settings)
+    return availability.catalog(db)
 
 
 @router.post(

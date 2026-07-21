@@ -3,6 +3,17 @@
   "notes": "Each case is an actual multi-turn caller script. Run prompt-only simulations with function mocks, then run the same scripts against the seeded backend. Replace normalized sample results with exported Retell call results before reporting measured performance.",
   "cases": [
     {
+      "id": "en_unsupported_specialty_early_exit",
+      "language": "English",
+      "intent": "booking",
+      "user_prompt": "Follow the script and use the live clinic catalogue. Do not collect scheduling constraints for an unsupported specialty.",
+      "script": [
+        {"caller": "I want to book an appointment with an ENT doctor.", "expected": ["call get_clinic_catalog", "state immediately that ENT is unsupported", "do not ask for date or time", "do not call search_availability"]},
+        {"caller": "What specialties can I book instead?", "expected": ["offer only specialties from the latest catalogue", "offer staff follow-up as an alternative"]}
+      ],
+      "success_criteria": ["unsupported specialty rejected before scheduling", "no invented clinician", "no availability search", "catalogue-backed alternatives"]
+    },
+    {
       "id": "en_dec_13_around_1",
       "language": "English",
       "intent": "booking",

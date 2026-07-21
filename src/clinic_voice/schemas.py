@@ -92,11 +92,49 @@ class SlotResult(BaseModel):
     currency: str
 
 
+class CatalogBranch(BaseModel):
+    code: str
+    name: str
+
+
+class CatalogAppointmentType(BaseModel):
+    code: str
+    name: str
+    specialty: str
+
+
+class CatalogPractitioner(BaseModel):
+    code: str
+    name: str
+    specialty: str
+    branch_codes: list[str]
+    appointment_type_codes: list[str]
+
+
+class ClinicCatalogResponse(BaseModel):
+    status: Literal["available"] = "available"
+    specialties: list[str]
+    branches: list[CatalogBranch]
+    practitioners: list[CatalogPractitioner]
+    appointment_types: list[CatalogAppointmentType]
+    instruction: str
+
+
 class AvailabilityResponse(BaseModel):
     status: Literal["available", "unavailable"]
+    code: Literal[
+        "OK",
+        "UNSUPPORTED_SPECIALTY",
+        "UNKNOWN_BRANCH",
+        "UNKNOWN_PRACTITIONER",
+        "UNKNOWN_APPOINTMENT_TYPE",
+        "INELIGIBLE_COMBINATION",
+        "NO_AVAILABLE_SLOTS",
+    ]
     search_id: str
     searched_at: datetime
     slots: list[SlotResult]
+    suggestions: list[str] = Field(default_factory=list)
     instruction: str
 
 

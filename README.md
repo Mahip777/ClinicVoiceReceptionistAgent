@@ -222,6 +222,7 @@ continue to authenticate with the generated `X-Webhook-Secret` header.
 |---|---|
 | `POST /v1/tools/get-caller-context` | Returning/shared-phone/drop/callback lookup |
 | `POST /v1/tools/identify-patient` | Full-name match or safe new-patient creation |
+| `POST /v1/tools/get-clinic-catalog` | Active Cliniko specialties, doctors, services, branches, and relationships |
 | `POST /v1/tools/search-availability` | Fresh cross-branch live search |
 | `POST /v1/tools/book-appointment` | Recheck, reserve, write, conflict-check |
 | `POST /v1/tools/list-appointments` | Select an existing appointment |
@@ -232,6 +233,25 @@ continue to authenticate with the generated `X-Webhook-Secret` header.
 
 Production tool calls authenticate with `X-Webhook-Secret`; Retell webhooks may alternatively use a
 Bearer value matching `RETELL_API_KEY`. PII fields are redacted from tool audit request bodies.
+
+### Early catalogue validation
+
+The booking flow calls `get_clinic_catalog` before asking for dates or times. This data comes from the
+latest catalogue synchronized from Cliniko, so unsupported requests are rejected without wasting a
+full scheduling conversation. For example, if ENT is absent from `specialties`, the agent states that
+the clinic does not offer ENT and offers only the supported specialties or a staff callback.
+
+`search_availability` also enforces the rule server-side and returns one of these codes:
+
+- `UNSUPPORTED_SPECIALTY`, `UNKNOWN_PRACTITIONER`, `UNKNOWN_APPOINTMENT_TYPE`, or `UNKNOWN_BRANCH`:
+  the requested item is not in the active catalogue.
+- `INELIGIBLE_COMBINATION`: the items exist, but the doctor/service/branch relationship is invalid.
+- `NO_AVAILABLE_SLOTS`: the request is valid, but no live time matches the scheduling constraints.
+- `OK`: live offers are present.
+
+This is intentionally not a hardcoded doctor list in Retell. After changing Cliniko practitioners,
+appointment types, or branches, run `clinic-sync`; a new deployment with an empty database performs
+the initial sync automatically.
 
 ## Tests and evaluation
 

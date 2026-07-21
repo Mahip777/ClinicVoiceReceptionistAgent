@@ -35,8 +35,18 @@
       }
     },
     {
+      "name": "get_clinic_catalog",
+      "description": "Get the live supported specialties, doctors, appointment types, branches, and valid relationships before collecting scheduling details.",
+      "method": "POST",
+      "url": "{{backend_base_url}}/v1/tools/get-clinic-catalog",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
       "name": "search_availability",
-      "description": "Run a fresh live availability search. Call again whenever any scheduling constraint changes.",
+      "description": "Run a fresh live availability search after catalogue validation. Returns a machine-readable code distinguishing unsupported inputs, invalid combinations, and no live slots.",
       "method": "POST",
       "url": "{{backend_base_url}}/v1/tools/search-availability",
       "parameters": {

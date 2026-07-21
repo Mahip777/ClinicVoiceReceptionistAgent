@@ -1,6 +1,9 @@
 from datetime import date, time
 
+from fastapi.testclient import TestClient
+
 from clinic_voice.database import SessionLocal
+from clinic_voice.main import app
 from clinic_voice.schemas import AvailabilityRequest, TimeWindow
 
 from .helpers import service_bundle
@@ -66,6 +69,7 @@ def test_branch_specific_specialty_is_deterministic():
             ),
         )
         assert central.status == "unavailable"
+        assert central.code == "INELIGIBLE_COMBINATION"
         assert north.status == "available"
         assert all(slot.branch_code == "BR_NORTH" for slot in north.slots)
 
@@ -104,3 +108,76 @@ def test_natural_practitioner_name_resolves_without_a_backend_code():
         )
         assert result.status == "available"
         assert all(slot.practitioner_name == "Dr Nisha Verma" for slot in result.slots)
+
+
+def test_catalog_exposes_only_live_supported_values_and_relationships():
+    _, _, _, availability, _ = service_bundle()
+    with SessionLocal() as db:
+        catalog = availability.catalog(db)
+
+    assert catalog.specialties == ["Dermatology", "General Medicine"]
+    assert "ENT" not in catalog.specialties
+    kavya = next(item for item in catalog.practitioners if item.name == "Dr Kavya Iyer")
+    assert kavya.branch_codes == ["BR_NORTH"]
+    assert kavya.appointment_type_codes == ["DERM_CONSULT"]
+
+
+def test_unsupported_specialty_is_rejected_before_pms_lookup(monkeypatch):
+    _, pms, _, availability, _ = service_bundle()
+
+    def unexpected_lookup(*_args, **_kwargs):
+        raise AssertionError("PMS availability must not be queried for an unsupported specialty")
+
+    monkeypatch.setattr(pms, "available_times", unexpected_lookup)
+    with SessionLocal() as db:
+        result = availability.search(
+            db,
+            AvailabilityRequest(
+                specialty="ENT",
+                date_from=date(2026, 12, 14),
+            ),
+        )
+
+    assert result.status == "unavailable"
+    assert result.code == "UNSUPPORTED_SPECIALTY"
+    assert result.suggestions == ["Dermatology", "General Medicine"]
+    assert "does not currently offer ENT" in result.instruction
+
+
+def test_unknown_doctor_is_not_reported_as_no_slots():
+    _, _, _, availability, _ = service_bundle()
+    with SessionLocal() as db:
+        result = availability.search(
+            db,
+            AvailabilityRequest(
+                practitioner_name="Dr Imaginary Person",
+                date_from=date(2026, 12, 14),
+            ),
+        )
+
+    assert result.code == "UNKNOWN_PRACTITIONER"
+    assert "Dr Nisha Verma" in result.suggestions
+
+
+def test_supported_items_in_an_invalid_combination_are_classified_separately():
+    _, _, _, availability, _ = service_bundle()
+    with SessionLocal() as db:
+        result = availability.search(
+            db,
+            AvailabilityRequest(
+                practitioner_name="Dr Kavya Iyer",
+                specialty="General Medicine",
+                date_from=date(2026, 12, 14),
+            ),
+        )
+
+    assert result.code == "INELIGIBLE_COMBINATION"
+
+
+def test_catalog_tool_endpoint_is_available_to_retell():
+    response = TestClient(app).post("/v1/tools/get-clinic-catalog", json={})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "available"
+    assert body["specialties"] == ["Dermatology", "General Medicine"]

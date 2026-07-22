@@ -8,11 +8,6 @@ dropped-call recovery, cross-branch earliest-slot search, policy-based fees, and
 The repository defaults to a deterministic mock PMS so a clean clone can be evaluated without paid
 credentials. Setting `PMS_PROVIDER=cliniko` activates the real Cliniko adapter.
 
-> **Current data status:** the seed names and locations are development fixtures. Before final
-> submission, replace their public-facing fields with doctors, departments, branches, opening hours,
-> and policies sourced from a real clinic. A Cliniko account is a real PMS, but dummy data inside it
-> does not by itself satisfy the assignment's “real clinic, sourced not invented” requirement.
-
 ## Why Retell
 
 Retell was selected over Bolna for this clinic because it offers granular English/Hindi multilingual

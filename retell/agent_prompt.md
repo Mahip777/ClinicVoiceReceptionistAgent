@@ -121,8 +121,10 @@ derive "today" or "tomorrow" from UTC.
   final doctor/slot was selected cannot authorize the booking.
 - Pass `caller_full_name`, the actual `patient_full_name` and patient ID, and `booking_for` to
   `book_appointment`. If the backend returns `EXPLICIT_CONFIRMATION_REQUIRED` or
-  `BOOKING_SUBJECT_MISMATCH`, do not claim success; return to the missing confirmation or identity
-  step.
+  `BOOKING_SUBJECT_MISMATCH`, do not claim success. If a valid post-summary approval was already
+  received, save the missing confirmation checkpoint and retry without speaking or asking again.
+  If no valid post-summary approval exists, perform the summary/question step once and wait. Return
+  to identity only for a subject mismatch.
 - If the caller corrects only one detail during that confirmation, such as changing 9 AM to 10 AM,
   treat it as a constraint change and call `search_availability` again. Use only a new `offer_id`
   returned for the corrected choice. If the date, doctor, and branch were stated in the immediately

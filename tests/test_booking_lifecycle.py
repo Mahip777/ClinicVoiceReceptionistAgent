@@ -1,10 +1,13 @@
 from datetime import date, timedelta
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from clinic_voice.config import get_settings
 from clinic_voice.database import SessionLocal
 from clinic_voice.errors import DomainError
+from clinic_voice.main import app
 from clinic_voice.models import Appointment, AppointmentType, Branch, Practitioner
 from clinic_voice.schemas import (
     AvailabilityRequest,
@@ -105,6 +108,45 @@ def test_live_call_booking_requires_confirmation_after_exact_offer_selection():
         )
         result = appointments.book(db, request)
         assert result.status == "confirmed"
+
+
+def test_booking_endpoint_returns_confirmation_guard_as_structured_tool_result():
+    settings = get_settings()
+    _, _, _, availability, _ = service_bundle()
+    with SessionLocal() as db:
+        patient = patient_by_phone(db, settings.test_phone_returning)
+        slot = offered_slot(db, availability)
+        patient_id = patient.id
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/tools/book-appointment",
+            json={
+                "call_id": "structured-confirmation-guard",
+                "phone_e164": settings.test_phone_returning,
+                "patient_id": patient_id,
+                "patient_full_name": "Asha Verma",
+                "caller_full_name": "Asha Verma",
+                "booking_for": "self",
+                "offer_id": slot.offer_id,
+                "idempotency_key": "structured-confirmation-guard-booking",
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "failed",
+        "code": "EXPLICIT_CONFIRMATION_REQUIRED",
+        "appointment": None,
+        "alternatives": [],
+        "instruction": (
+            "Do not book yet: the booking_confirmed checkpoint is missing or mismatched. "
+            "If a new explicit approval was already received after the complete summary, "
+            "save stage=booking_confirmed with this offer_id and explicit_confirmation=true, "
+            "then retry without repeating the summary or question. Otherwise speak the "
+            "summary once, ask whether to confirm, and wait for a new caller response."
+        ),
+    }
 
 
 def test_booking_for_someone_else_cannot_reuse_the_callers_identity():

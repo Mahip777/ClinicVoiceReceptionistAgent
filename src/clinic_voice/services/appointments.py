@@ -236,9 +236,11 @@ class AppointmentService:
             raise DomainError(
                 "EXPLICIT_CONFIRMATION_REQUIRED",
                 (
-                    "Do not book yet. Speak the selected date, time, doctor, and branch, ask whether "
-                    "to confirm, wait for a new caller response, then checkpoint stage=booking_confirmed "
-                    "with this offer_id and explicit_confirmation=true."
+                    "Do not book yet: the booking_confirmed checkpoint is missing or mismatched. "
+                    "If a new explicit approval was already received after the complete summary, "
+                    "save stage=booking_confirmed with this offer_id and explicit_confirmation=true, "
+                    "then retry without repeating the summary or question. Otherwise speak the "
+                    "summary once, ask whether to confirm, and wait for a new caller response."
                 ),
             )
 

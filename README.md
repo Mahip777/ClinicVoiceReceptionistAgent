@@ -212,14 +212,33 @@ patient-facing duration.
 2. Select only English (India/US as appropriate) and Hindi (India), not broad legacy multilingual.
 3. Select a voice that supports both selected languages.
 4. Paste `retell/agent_prompt.md` as the global prompt.
-5. Add each custom function from `retell/tools.json`, replacing variables with the public HTTPS
+5. Use one **Book Appointment** subagent for catalogue lookup, availability, slot selection, the
+   single confirmation question, the `booking_confirmed` checkpoint, and `book_appointment`. Paste
+   `retell/booking_subagent_prompt.md` into that node and attach `get_clinic_catalog`,
+   `search_availability`, `checkpoint`, and `book_appointment`. Do not add separate Confirm Booking
+   or Execute Booking nodes: a prompt-based edge can transition on a caller's "yes" before the
+   checkpoint tool result exists, which causes the backend guard to send the flow back and repeat
+   confirmation.
+6. Add each custom function from `retell/tools.json`, replacing variables with the public HTTPS
    backend URL and webhook secret. Enable Retell's **Payload: args only** option for every custom
    function so the JSON body matches the documented endpoint schema.
-6. Configure the inbound-number webhook as `/webhooks/retell/inbound`.
-7. Configure call event webhooks as `/webhooks/retell/events`.
-8. Add `clinic_name`, `clinic_timezone`, and inbound phone/call IDs as dynamic variables.
-9. Tune interruption sensitivity using real phone audio, not text simulation alone.
-10. Import/recreate the scenarios in `retell/test_cases.json` as batch simulations.
+7. Configure the inbound-number webhook as `/webhooks/retell/inbound`.
+8. Configure call event webhooks as `/webhooks/retell/events`.
+9. Add `clinic_name`, `clinic_timezone`, and inbound phone/call IDs as dynamic variables.
+10. Tune interruption sensitivity using real phone audio, not text simulation alone.
+11. Import/recreate the scenarios in `retell/test_cases.json` as batch simulations.
+
+For the configured development agent, the guarded updater merges an existing three-node draft and
+verifies the returned graph before publishing. Updating the draft does not place a call or consume
+voice minutes:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\update_retell_booking_flow.py
+.\.venv\Scripts\python.exe scripts\update_retell_booking_flow.py --publish
+```
+
+The first command only updates and verifies the draft. Run the second command only after reviewing
+that draft. Retell keeps earlier published agent versions available for rollback.
 
 A dedicated test number is recommended. Keep the web-call interface as a fallback because number
 rental and telephony may not be included in free credits. Do not place outbound calls to numbers you

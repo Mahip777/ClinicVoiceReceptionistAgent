@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from clinic_voice.config import Settings, get_settings
 from clinic_voice.database import get_db
+from clinic_voice.errors import DomainError
 from clinic_voice.pms import get_pms_adapter
 from clinic_voice.schemas import (
     AvailabilityRequest,
@@ -165,7 +166,20 @@ def book_appointment(
     settings: Settings = Depends(get_settings),
 ):
     _, _, appointments, calls = services(settings)
-    result = appointments.book(db, payload)
+    try:
+        result = appointments.book(db, payload)
+    except DomainError as exc:
+        # Expected booking guards are part of the voice workflow, not transport failures. Returning
+        # a typed 200 response keeps Retell's tool result machine-readable so the agent can recover
+        # without repeating the confirmation question. Authentication and request validation still
+        # use their normal non-2xx responses before this point.
+        return BookingResponse(
+            status="failed",
+            code=exc.code,
+            appointment=None,
+            alternatives=[],
+            instruction=exc.message,
+        )
     if payload.call_id and result.status == "confirmed":
         calls.checkpoint(
             db,

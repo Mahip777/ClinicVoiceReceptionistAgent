@@ -135,6 +135,17 @@ def evaluate(calls: list[dict[str, Any]]) -> dict[str, Any]:
         by_language[call.get("language", "Unknown")].append(call)
     return {
         "calls": len(calls),
+        "scenarios": [
+            {
+                "scenario_id": item.get("scenario_id", ""),
+                "label": item.get("label", item.get("scenario_id", "")),
+                "call_ids": item.get("call_ids", []),
+                "language": item.get("language", "Unknown"),
+                "intent": item.get("intent", ""),
+                "task_completed": bool(item.get("task_completed")),
+            }
+            for item in calls
+        ],
         "per_language": {
             language: _language_metrics(items) for language, items in sorted(by_language.items())
         },
@@ -143,13 +154,13 @@ def evaluate(calls: list[dict[str, Any]]) -> dict[str, Any]:
             "than being inferred from end-to-end latency."
         ),
         "limitations": [
-            "Text simulations do not measure ASR, background noise, pronunciation, or barge-in.",
+            "This measured set uses Retell audio calls, but six scenarios cannot represent the full range of accents, background noise, devices, or carrier conditions.",
             "Scripted callers are more cooperative and consistent than real callers.",
             "A successful tool trace does not prove natural voice timing or intelligible speech.",
             "Retell component timings depend on platform instrumentation and may overlap, so they must not be summed as independent stages.",
             "Exact-repeat detection misses paraphrased redundant questions unless turns are annotated with asked_for and provided_fields.",
             "Small language samples have wide uncertainty; English, Hindi, and code-switch results must not be blended.",
-            "Mock-mode success proves backend determinism, not Cliniko configuration or carrier behavior.",
+            "Separate mock-mode backend tests prove determinism but not Cliniko permissions or carrier behavior.",
             "A warm test endpoint understates free-tier cold-start latency.",
         ],
     }
@@ -191,6 +202,20 @@ def markdown(report: dict[str, Any]) -> str:
         f"Calls evaluated: {report['calls']}",
         "",
         "All outcome, efficiency, correctness, and latency metrics below are separated by language.",
+        "",
+        "## Measured Retell scenarios",
+        "",
+        "| Scenario | Language | Intent | Retell call ID(s) | Completed |",
+        "|---|---|---|---|---:|",
+    ]
+    for scenario in report.get("scenarios", []):
+        call_ids = ", ".join(scenario["call_ids"])
+        completed = "yes" if scenario["task_completed"] else "no"
+        lines.append(
+            f"| {scenario['label']} | {scenario['language']} | {scenario['intent']} | "
+            f"{call_ids} | {completed} |"
+        )
+    lines += [
         "",
         "## Per-language outcomes and efficiency",
         "",

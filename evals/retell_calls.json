@@ -1,0 +1,1032 @@
+[
+  {
+    "scenario_id": "no_available_slots",
+    "label": "No available slots",
+    "call_ids": [
+      "call_ec292b30afbcfe2a572187f4334"
+    ],
+    "language": "English",
+    "intent": "booking",
+    "booking_confirmed": false,
+    "completion_turn": 7,
+    "fresh_search_compliant": true,
+    "full_name_captured": true,
+    "spoken_branch_matches_backend": true,
+    "task_completed": true,
+    "turns": [
+      {
+        "role": "agent",
+        "text": "Namaste, thank you for calling ClinicForAll . How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "Hi. I'm looking to point to both doctor Kavya to follow."
+      },
+      {
+        "role": "agent",
+        "text": "Got it, you’d like an appointment with, uh, Dr. Kavya.  \n\nFirst, can you please tell me your full name, first and last, so I can pull up your file and help you with the booking?"
+      },
+      {
+        "role": "user",
+        "text": "My name is doctor mister mister I'm sorry. My name is mister Ballab Sharma."
+      },
+      {
+        "role": "agent",
+        "text": "No worries at all. Thank you, Mr. Ballab Sharma.  \nJust to confirm, you’d like to book a new appointment with Dr. Kavya, right?"
+      },
+      {
+        "role": "user",
+        "text": "Yep."
+      },
+      {
+        "role": "agent",
+        "text": "Perfect.\nUh, what kind of appointment do you need with Dr. Kavya — for example, a general consultation, follow‑up, or something specific like dermatology, dental, etc.?"
+      },
+      {
+        "role": "user",
+        "text": "General consultation."
+      },
+      {
+        "role": "agent",
+        "text": "Got it, a general consultation with Dr. Kavya.  \n\nNext, for the date: what day works best for you — a specific date, or should I look for the earliest available slot?"
+      },
+      {
+        "role": "user",
+        "text": "Twenty second. of this month. Full come."
+      },
+      {
+        "role": "agent",
+        "text": "Thanks. So, 22nd of this month.It looks like, um, there’s no matching setup for a general consultation with Dr. Kavya on that date in our system.Would you like:\n1) the earliest available general consultation with any doctor, or  \n2)"
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "agent",
+        "text": "to stick with Dr. Kavya and try a different date?"
+      },
+      {
+        "role": "user",
+        "text": "First option."
+      },
+      {
+        "role": "agent",
+        "text": "Let So, uh, I’ve checked, and right now there are no available general consultation slots showing in our system for any doctor.\nWhat I can do is have the clinic staff review this and call you back with options.  \nShould I go ahead and, you know, place a request for someone from the clinic to contact you to arrange an appointment?"
+      },
+      {
+        "role": "user",
+        "text": "Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "Is there anything else I can help you with?"
+      },
+      {
+        "role": "user",
+        "text": "Thank you very much."
+      },
+      {
+        "role": "agent",
+        "text": "Thank you for calling ClinicForAll. Take care and goodbye."
+      }
+    ],
+    "latency": {
+      "asr_ms": [
+        158.0,
+        152.0,
+        128.0,
+        645.0,
+        204.0,
+        0.0,
+        324.0,
+        179.0,
+        396.0
+      ],
+      "llm_ms": [
+        2.0,
+        732.0,
+        782.0,
+        700.0,
+        609.0,
+        680.0,
+        659.0,
+        1073.0,
+        890.0,
+        918.0,
+        597.0,
+        1492.0,
+        937.0,
+        2.0,
+        764.0,
+        2.0,
+        1.0
+      ],
+      "tts_ms": [
+        196.0,
+        231.0,
+        180.0,
+        234.0,
+        284.0,
+        222.0,
+        234.0,
+        150.0,
+        150.0,
+        201.0,
+        145.0,
+        152.0,
+        147.0,
+        237.0,
+        142.0,
+        275.0
+      ],
+      "end_to_end_ms": [
+        2257.0,
+        2943.0,
+        1497.0,
+        1808.0,
+        1424.0,
+        1134.0,
+        2067.0,
+        732.0,
+        910.0
+      ]
+    }
+  },
+  {
+    "scenario_id": "rescheduled_successfully",
+    "label": "Rescheduled successfully",
+    "call_ids": [
+      "call_f17c9104ab8f577d402ba295f68"
+    ],
+    "language": "Code-switch",
+    "intent": "reschedule",
+    "completion_turn": 7,
+    "fresh_search_compliant": true,
+    "full_name_captured": true,
+    "spoken_branch_matches_backend": true,
+    "task_completed": true,
+    "turns": [
+      {
+        "role": "agent",
+        "text": "Namaste, thank you for calling ClinicForAll . How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "Hello? I am Nisha. I wanted to reschedule my appointment. With doctor Nisha Sherman."
+      },
+      {
+        "role": "agent",
+        "text": "Hi Nisha, got it—you’d like to reschedule an appointment with Dr. Nisha Sharma.\n\nUm, which appointment do you want to change—your upcoming one on record, or a different date and time?"
+      },
+      {
+        "role": "user",
+        "text": "The upcoming one for that was scheduled for tomorrow."
+      },
+      {
+        "role": "agent",
+        "text": "Let Thanks. I can see one upcoming appointment:\n\n- Tomorrow, 22 July at 9:00 AM, with Dr Nisha Sharma at ClinicForAll – South Branch.\n\nIs this the appointment you want to reschedule?"
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "agent",
+        "text": "Got it, we’ll reschedule that one.\n\nUh, what new timing are you looking for—same doctor but a different time tomorrow, a different date, or something else?"
+      },
+      {
+        "role": "user",
+        "text": "आप चौबीस तारीख को schedule कर लो."
+      },
+      {
+        "role": "agent",
+        "text": "Let me check that live. Chhabiis नहीं, चौबीस को ठीक है.\n\nMere paas teen options hain, sab 24 July ko 9:00 AM par Dr Nisha Sharma ke saath:\n\n1) ClinicForAll – South Branch  \n2) ClinicForAll – North Branch  \n3) ClinicForAll – Central Branch  \n\nAap kaun se branch par aana chahengi?"
+      },
+      {
+        "role": "user",
+        "text": "Second option सही है."
+      },
+      {
+        "role": "agent",
+        "text": "Thik hai, aapne second option choose kiya.\n\nAb main aapka purana aur naya dono time clear kar deta hoon:\n\n- Purana: 22 July, 9:00 AM, Dr Nisha Sharma, ClinicForAll – South Branch. - Naya: 24 July, 9:00 AM, Dr Nisha Sharma, ClinicForAll – North Branch.\n\nKya main is nayi appointment par reschedule kar doon?"
+      },
+      {
+        "role": "user",
+        "text": "Yes. Yes."
+      },
+      {
+        "role": "agent",
+        "text": "Nisha ji, ek chhota sa update: is reschedule ke liye 300 INR ka fee lagega.\n\nKya aap is 300 rupaye ki fee ke saath reschedule continue karna chahti hain?"
+      },
+      {
+        "role": "user",
+        "text": "हां जी."
+      },
+      {
+        "role": "agent",
+        "text": "One moment while Ho gaya, reschedule confirm ho chuka hai.\n\nAb aapki appointment:\n- 24 July, 9:00 AM  \n- Dr Nisha Sharma  \n- ClinicForAll – North Branch  \n\nFee 300 INR apply ho gayi hai.  \nAur koi madad"
+      },
+      {
+        "role": "user",
+        "text": "(unintelligible audio) Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "Thank you for calling ClinicForAll. Take care and goodbye."
+      }
+    ],
+    "latency": {
+      "asr_ms": [
+        202.0,
+        157.0,
+        116.0,
+        39.0,
+        4.0,
+        0.0
+      ],
+      "llm_ms": [
+        2.0,
+        739.0,
+        1093.0,
+        1324.0,
+        716.0,
+        487.0,
+        823.0,
+        792.0,
+        3337.0,
+        1443.0,
+        2256.0,
+        948.0,
+        2502.0,
+        516.0,
+        1.0,
+        2.0,
+        2.0
+      ],
+      "tts_ms": [
+        156.0,
+        203.0,
+        241.0,
+        220.0,
+        165.0,
+        147.0,
+        182.0,
+        198.0,
+        196.0,
+        148.0,
+        162.0,
+        225.0,
+        155.0,
+        173.0
+      ],
+      "end_to_end_ms": [
+        1391.0,
+        1255.0,
+        1176.0,
+        2847.0,
+        1269.686279296875,
+        608.0
+      ]
+    }
+  },
+  {
+    "scenario_id": "appointment_cancelled_successfully",
+    "label": "Appointment cancelled successfully",
+    "call_ids": [
+      "call_b0b597d159e34c58fcb91bd60b0"
+    ],
+    "language": "Hindi",
+    "intent": "cancellation",
+    "completion_turn": 7,
+    "full_name_captured": true,
+    "spoken_branch_matches_backend": true,
+    "task_completed": true,
+    "turns": [
+      {
+        "role": "agent",
+        "text": "Namaste, thank you for calling ClinicForAll . How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "मैं talk, मैं निशा बोल रहा हूं."
+      },
+      {
+        "role": "agent",
+        "text": "Ji, namaste Nisha ji. ClinicForAll mein aapka swaagat hai. \nAap bataiye,"
+      },
+      {
+        "role": "user",
+        "text": "मेरा"
+      },
+      {
+        "role": "agent",
+        "text": "aapko appointment book,"
+      },
+      {
+        "role": "user",
+        "text": "appointment cancel कर दीजिए."
+      },
+      {
+        "role": "agent",
+        "text": "Ji, theek hai, aapka appointment cancel karna hai.Bas pehle, kyunki is number par do patients registered hain, mujhe aapka poora naam chahiye.  \nKripya"
+      },
+      {
+        "role": "user",
+        "text": "Nisha Selma."
+      },
+      {
+        "role": "agent",
+        "text": "apna full name,"
+      },
+      {
+        "role": "user",
+        "text": "Nisha Sharma."
+      },
+      {
+        "role": "agent",
+        "text": "Dhanyavaad, Nisha Sharma ji, aapki pehchaan ho gayi hai.  \n\nAapne apna appointment cancel karne ke liye bola hai.Ab main aage, um, cancel karne wali team ko yeh request bhej raha hoon.  \nThodi der mein staff aapko call karke confirm kar denge ki kaunsa appointment cancel hua hai aur uski details kya hain."
+      },
+      {
+        "role": "user",
+        "text": "Ok."
+      },
+      {
+        "role": "agent",
+        "text": "Let Nisha ji, aapka ek active appointment mila hai:  \n24 July ko subah 9:00 baje, ClinicForAll - North Branch par, Dr Nisha Sharma ke saath, “First Appointment”.  \n\nKya main is appointment ko cancel kar doon?"
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "agent",
+        "text": "One moment while Theek hai Nisha ji, aapka 24 July ko subah 9:00 baje"
+      },
+      {
+        "role": "user",
+        "text": "Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "wala appointment, Is there anything else I can help you with?"
+      },
+      {
+        "role": "user",
+        "text": "Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "Thank you for calling ClinicForAll. Take care and goodbye."
+      }
+    ],
+    "latency": {
+      "asr_ms": [
+        201.0,
+        0.0,
+        184.0,
+        172.0
+      ],
+      "llm_ms": [
+        3.0,
+        823.0,
+        934.0,
+        3390.0,
+        1381.0,
+        2211.0,
+        2264.0,
+        860.0,
+        2.0,
+        3.0
+      ],
+      "tts_ms": [
+        182.0,
+        145.0,
+        149.0,
+        189.0,
+        211.0,
+        253.0,
+        186.0,
+        149.0,
+        166.0,
+        190.0
+      ],
+      "end_to_end_ms": [
+        2369.0009765625,
+        1685.0,
+        1878.99609375,
+        1023.9951171875
+      ]
+    }
+  },
+  {
+    "scenario_id": "interrupted_then_completed",
+    "label": "Call interrupted and then completed in next attempt",
+    "call_ids": [
+      "call_e32f1733953995916548677953b",
+      "call_bb0f1588bfad7eaa296de0862c8"
+    ],
+    "language": "English",
+    "intent": "reschedule",
+    "completion_turn": 14,
+    "fresh_search_compliant": true,
+    "full_name_captured": true,
+    "spoken_branch_matches_backend": true,
+    "drop_recovery_success": true,
+    "task_completed": true,
+    "turns": [
+      {
+        "role": "agent",
+        "text": "Namaste, thank you for calling ClinicForAll . How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "Hi. This is Shuvan Sharma. I want to reschedule my appointment."
+      },
+      {
+        "role": "agent",
+        "text": "Hi Shuvan, got it, you’d like to reschedule your appointment.\n\nUm, which appointment do you want to change — the one on the most recent upcoming date, or a different one?"
+      },
+      {
+        "role": "user",
+        "text": "I have only one appointment."
+      },
+      {
+        "role": "agent",
+        "text": "Thanks, that helps.\n\nYou have a confirmed “First Appointment” with Dr. Mahip Khandelwal at ClinicForAll – South Branch on 24 July at 9:00 AM. Is this the one you want to reschedule?"
+      },
+      {
+        "role": "user",
+        "text": "Yes. Since this this is the only appointment I have."
+      },
+      {
+        "role": "agent",
+        "text": "Got it, we’ll reschedule that one.\n\nWhat new timing are you looking for—like a different date, a different time on the same day, or both?"
+      },
+      {
+        "role": "user",
+        "text": "Twenty four of July twenty am."
+      },
+      {
+        "role": "agent",
+        "text": "Just to confirm, you’d like to move it to 24th July at 8:20 AM at the same South Branch with Dr. Mahip, right?"
+      },
+      {
+        "role": "user",
+        "text": "Twelve AM."
+      },
+      {
+        "role": "agent",
+        "text": "Thanks for clarifying—12:00.\n\nDo you mean 12:00 noon on 24th July at"
+      },
+      {
+        "role": "user",
+        "text": "Yeah."
+      },
+      {
+        "role": "agent",
+        "text": "the same South Branch with Dr. Mahip? Let I checked the timings for 24th July around 12 noon at South Branch with Dr. Mahip.\n\nI can move your appointment to:\n1) 12:00 PM to 12:45 PM, ClinicForAll – South Branch, with Dr. Mahip, or  \n2) 12:30 PM to 1:15 PM, same branch, with Dr. Mahip.\n\nWhich"
+      },
+      {
+        "role": "user",
+        "text": "Move in"
+      },
+      {
+        "role": "agent",
+        "text": "one would you like?"
+      },
+      {
+        "role": "user",
+        "text": "second option."
+      },
+      {
+        "role": "agent",
+        "text": "All right, I’ve moved it to the second option.\n\nYour new appointment is on Namaste, thank you for calling ClinicForAll . How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "Hi. This is Shuvan Sharma. My last call got cut. Is my appointment rescheduled?"
+      },
+      {
+        "role": "agent",
+        "text": "Hi Shuvan, thanks for calling back.Um, I can see who you are, but I, like, don’t have the latest reschedule status yet in this part of the system.I’ll need to, uh, move you to the rescheduling flow so we can check and, if needed, fix your appointment time.  \n\nAre you calling to change the same appointment we talked about earlier today?"
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "agent",
+        "text": "Let me, uh, read out what I see so we’re on the same page.  \n\nYou have one active appointment:  \n- On 24 July 2026, at 12:30 PM,  \n- With Dr. Mahip Khandelwal,  \n-"
+      },
+      {
+        "role": "user",
+        "text": "Yes. Yes."
+      },
+      {
+        "role": "agent",
+        "text": "Got it, that’s the one.To reschedule it, what new timing are you"
+      },
+      {
+        "role": "user",
+        "text": "I"
+      },
+      {
+        "role": "agent",
+        "text": "looking for—any"
+      },
+      {
+        "role": "user",
+        "text": "just wanted to confirm, uh, if it was rescheduled or not earlier."
+      },
+      {
+        "role": "agent",
+        "text": "Understood. So, um, as of right now I’m seeing it still as your original confirmed slot on 24 July 2026 at 12:30 PM with Dr. Mahip Khandelwal at ClinicForAll – South Branch."
+      },
+      {
+        "role": "user",
+        "text": "That sounds good. That sounds good. Effort Bill. Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "Is there anything else I can help you with?"
+      },
+      {
+        "role": "user",
+        "text": "That's all. Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "Thank you for calling ClinicForAll. Take care and goodbye."
+      }
+    ],
+    "latency": {
+      "asr_ms": [
+        306.0,
+        290.0,
+        649.0,
+        522.0,
+        0.0,
+        232.0,
+        137.0,
+        39.0,
+        141.0
+      ],
+      "llm_ms": [
+        2.0,
+        634.0,
+        1285.0,
+        833.0,
+        670.0,
+        2979.0,
+        1213.0,
+        798.0,
+        1306.0,
+        1140.0,
+        2455.0,
+        1048.0,
+        3.0,
+        945.0,
+        1166.0,
+        913.0,
+        596.0,
+        764.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        5.0
+      ],
+      "tts_ms": [
+        192.0,
+        220.0,
+        253.0,
+        141.0,
+        198.0,
+        241.0,
+        149.0,
+        156.0,
+        161.0,
+        202.0,
+        254.0,
+        146.0,
+        148.0,
+        192.0,
+        202.0,
+        145.0,
+        175.0,
+        300.0,
+        232.0
+      ],
+      "end_to_end_ms": [
+        3542.0,
+        1851.0,
+        1790.006103515625,
+        2065.0,
+        1527.0,
+        1186.0,
+        1678.998046875,
+        735.0,
+        560.0
+      ]
+    }
+  },
+  {
+    "scenario_id": "unsupported_service",
+    "label": "Appointment requested for a service that does not exist",
+    "call_ids": [
+      "call_42adbb2a06f120e87e1dc16c3df"
+    ],
+    "language": "English",
+    "intent": "booking",
+    "booking_confirmed": true,
+    "completion_turn": 14,
+    "fresh_search_compliant": true,
+    "full_name_captured": true,
+    "spoken_branch_matches_backend": true,
+    "task_completed": true,
+    "turns": [
+      {
+        "role": "agent",
+        "text": "Namaste, thank you for calling ClinicForAll . How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "Hi. I want an appointment today."
+      },
+      {
+        "role": "agent",
+        "text": "Got it, you’d like an appointment for today.  \n\nUm, since this number has, you know, more than one patient, can you"
+      },
+      {
+        "role": "user",
+        "text": "My name is Shuvan Sharma."
+      },
+      {
+        "role": "agent",
+        "text": "Thank you, Shuvan.  \n\nFor today’s appointment, uh, do you have any preference—like a particular doctor or"
+      },
+      {
+        "role": "user",
+        "text": "Yeah. I"
+      },
+      {
+        "role": "agent",
+        "text": "type of"
+      },
+      {
+        "role": "user",
+        "text": "wanted an appointment with ENT doctor."
+      },
+      {
+        "role": "agent",
+        "text": "Got it, you’d like an ENT appointment today. \n\nFor this visit, is it your first appointment at ClinicForAll for ENT, or have you seen our doctors before and just need a Standard Appointment (a follow‑up)?"
+      },
+      {
+        "role": "user",
+        "text": "It is my first appointment."
+      },
+      {
+        "role": "agent",
+        "text": "Ah, looks like I can’t, um, search for earlier today anymore.  \n\nWould you like the earliest ENT first appointment from tomorrow onwards, or do you have a specific date in mind?"
+      },
+      {
+        "role": "user",
+        "text": "Yeah. Tomorrow onwards work fine."
+      },
+      {
+        "role": "agent",
+        "text": "Thanks, Shuvan. So, uh, I’ve checked, and ClinicForAll doesn’t currently offer ENT appointments.  \n\nWe do have General Medicine and other basic services. Would you like to book the earliest General Medicine – First Appointment from tomorrow onwards, or should"
+      },
+      {
+        "role": "user",
+        "text": "Do your"
+      },
+      {
+        "role": "agent",
+        "text": "I ask"
+      },
+      {
+        "role": "user",
+        "text": "clinic has any dermatologist appointment?"
+      },
+      {
+        "role": "agent",
+        "text": "Thanks for checking. I’ve just checked the system and, um, our clinic doesn’t currently list Dermatology appointments either.\nIf"
+      },
+      {
+        "role": "user",
+        "text": "Okay."
+      },
+      {
+        "role": "agent",
+        "text": "you’d"
+      },
+      {
+        "role": "user",
+        "text": "Go ahead with general appointment."
+      },
+      {
+        "role": "agent",
+        "text": "Let I’ve found a few General Medicine first-appointment slots for tomorrow. All are from 9:00 to 9:45 AM:  \n\n1) ClinicForAll - South Branch with Dr John"
+      },
+      {
+        "role": "user",
+        "text": "Go"
+      },
+      {
+        "role": "agent",
+        "text": "Doe  \n2)"
+      },
+      {
+        "role": "user",
+        "text": "ahead with first option."
+      },
+      {
+        "role": "agent",
+        "text": "So just to summarise: tomorrow, 22 July, 9:00–9:45 AM, General Medicine, with Dr John Doe at"
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "agent",
+        "text": "ClinicForAll -"
+      },
+      {
+        "role": "user",
+        "text": "That sounds good."
+      },
+      {
+        "role": "agent",
+        "text": "One You’re all set, Shuvan. Your appointment is confirmed for tomorrow, 22 July, from 9:00 to 9:45 AM with"
+      },
+      {
+        "role": "user",
+        "text": "Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "Dr John Is there anything else I can help you with?"
+      },
+      {
+        "role": "user",
+        "text": "That's all."
+      },
+      {
+        "role": "agent",
+        "text": "Thank you for calling ClinicForAll. Take care and goodbye."
+      }
+    ],
+    "latency": {
+      "asr_ms": [
+        319.0,
+        285.0,
+        192.0,
+        93.0,
+        151.0,
+        224.0
+      ],
+      "llm_ms": [
+        3.0,
+        601.0,
+        1184.0,
+        2287.0,
+        1142.0,
+        911.0,
+        1154.0,
+        666.0,
+        4140.0,
+        1503.0,
+        1016.0,
+        1239.0,
+        2122.0,
+        822.0,
+        2.0,
+        1.0,
+        3.0
+      ],
+      "tts_ms": [
+        233.0,
+        197.0,
+        256.0,
+        212.0,
+        227.0,
+        279.0,
+        336.0,
+        174.0,
+        229.0,
+        177.0,
+        238.0,
+        187.0,
+        154.0,
+        232.0,
+        296.0
+      ],
+      "end_to_end_ms": [
+        2876.0,
+        4821.0,
+        2015.9951171875,
+        2567.989990234375,
+        1986.0,
+        824.0
+      ]
+    }
+  },
+  {
+    "scenario_id": "hindi_booking",
+    "label": "Hindi booked appointment",
+    "call_ids": [
+      "call_7ba6c01d8633f01789df675da73"
+    ],
+    "language": "Hindi",
+    "intent": "booking",
+    "booking_confirmed": true,
+    "completion_turn": 13,
+    "fresh_search_compliant": true,
+    "full_name_captured": true,
+    "spoken_branch_matches_backend": true,
+    "task_completed": true,
+    "turns": [
+      {
+        "role": "agent",
+        "text": "Namaste, thank you for calling ClinicForAll . How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "Hi. मैं विश्वास बोल रहा हूँ."
+      },
+      {
+        "role": "agent",
+        "text": "Namaste Vishwas ji, main ClinicForAll ka automated assistant bol raha hoon.  \n\nAapko kis mein madad chahiye — appointment book karna, reschedule/cancel karna, ya staff se"
+      },
+      {
+        "role": "user",
+        "text": "Appointment"
+      },
+      {
+        "role": "agent",
+        "text": "call-back chahiye?"
+      },
+      {
+        "role": "user",
+        "text": "book करना है."
+      },
+      {
+        "role": "agent",
+        "text": "Theek hai, naya appointment book karna hai.  \n\nEk chhota sa sawal, aap jo appointment book kara rahe hain woh:  \n- khud aapke liye hai, ya  \n- kisi aur ke liye (family member, friend)?"
+      },
+      {
+        "role": "user",
+        "text": "मेरे लिए ही है."
+      },
+      {
+        "role": "agent",
+        "text": "Samajh gaya, aapke liye hi hai. Mujhe aapka poora naam chahiye, given name aur surname dono."
+      },
+      {
+        "role": "user",
+        "text": "Vishwas"
+      },
+      {
+        "role": "agent",
+        "text": "Kripya apna full name bataiye,"
+      },
+      {
+        "role": "user",
+        "text": "Steni"
+      },
+      {
+        "role": "agent",
+        "text": "Thank you, Vishwas Steni. Aapka naam note kar liya hai.  \n\nAb, um, agla step yeh hai ki main aapka appointment book karne ke liye details loon.  \nKis type ka appointment chahiye — jaise general consultation, dental, ya koi specific doctor ke saath?"
+      },
+      {
+        "role": "user",
+        "text": "(unintelligible audio) नहीं खंडेलभाग के साथ,"
+      },
+      {
+        "role": "agent",
+        "text": "Thik hai, aapko, um, Mahip Khandelwal ke saath General Medicine ka appointment chahiye.  \n\nYeh bataiye: kya yeh aapka pehla visit hoga ClinicForAll mein, ya aap pehle aa chuke hain aur regular / follow‑up appointment chahiye?"
+      },
+      {
+        "role": "user",
+        "text": "पहला visit है."
+      },
+      {
+        "role": "agent",
+        "text": "Vishwas ji, Mahip Khandelwal ke saath First Appointment ke liye kuch earliest slots available hain ClinicForAll - South Branch par:  \n\n1) 23 July,"
+      },
+      {
+        "role": "user",
+        "text": "मुझे"
+      },
+      {
+        "role": "agent",
+        "text": "subah 9:45–10:30  \n2)"
+      },
+      {
+        "role": "user",
+        "text": "छब्बीस July का चाहिए."
+      },
+      {
+        "role": "agent",
+        "text": "Theek hai, 26 July ke liye dekh liya hai Mahip Khandelwal ke saath. ClinicForAll - Central Branch par yeh slots available hain:  \n\n1) 26 July, subah 9:00–9:45  \n2) 26 July, subah 9:30–10:15"
+      },
+      {
+        "role": "user",
+        "text": "पहला"
+      },
+      {
+        "role": "agent",
+        "text": "3) 26"
+      },
+      {
+        "role": "user",
+        "text": "slot book कर दीजिए."
+      },
+      {
+        "role": "agent",
+        "text": "Vishwas Steni ke liye First Appointment, 26 July subah 9:00 baje, ClinicForAll - Central Branch par, Dr Mahip Khandelwal ke saath rakh raha hoon. Should I confirm this booking?"
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "agent",
+        "text": "One Vishwas ji, aapka appointment confirm ho gaya hai: 26 July, subah 9:00 se"
+      },
+      {
+        "role": "user",
+        "text": "Thank you जी."
+      },
+      {
+        "role": "agent",
+        "text": "Ji, thank you. Kya aur kisi appointment mein madad chahiye—jaise reschedule,"
+      },
+      {
+        "role": "user",
+        "text": "Thank you."
+      },
+      {
+        "role": "agent",
+        "text": "Thank you for calling ClinicForAll. Take care."
+      }
+    ],
+    "latency": {
+      "asr_ms": [
+        241.0,
+        990.0,
+        219.0,
+        182.0,
+        102.0,
+        355.0
+      ],
+      "llm_ms": [
+        3.0,
+        887.0,
+        744.0,
+        833.0,
+        801.0,
+        1007.0,
+        1107.0,
+        2005.0,
+        1215.0,
+        942.0,
+        934.0,
+        1781.0,
+        1094.0,
+        1166.0,
+        922.0,
+        854.0,
+        1315.0
+      ],
+      "tts_ms": [
+        230.0,
+        237.0,
+        158.0,
+        145.0,
+        227.0,
+        191.0,
+        157.0,
+        226.0,
+        154.0,
+        153.0,
+        184.0,
+        170.0,
+        174.0,
+        194.0,
+        234.0
+      ],
+      "end_to_end_ms": [
+        3328.0,
+        2266.0,
+        1725.0,
+        1677.0,
+        1285.0,
+        2361.0
+      ]
+    }
+  }
+]

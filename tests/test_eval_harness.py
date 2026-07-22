@@ -1,6 +1,11 @@
 import pytest
 
-from clinic_voice.eval_harness import evaluate, redundant_question_count, validate_scenarios
+from clinic_voice.eval_harness import (
+    evaluate,
+    markdown,
+    redundant_question_count,
+    validate_scenarios,
+)
 
 
 def test_redundant_question_metric_and_language_separation():
@@ -68,3 +73,25 @@ def test_scenario_validation_requires_actual_multi_turn_scripts():
     valid["cases"][0]["script"] = [{"caller": "Book", "expected": ["ask name"]}]
     with pytest.raises(ValueError, match="at least two"):
         validate_scenarios(valid)
+
+
+def test_report_includes_measured_call_provenance():
+    report = evaluate(
+        [
+            {
+                "scenario_id": "measured_booking",
+                "label": "Measured booking",
+                "call_ids": ["call_one", "call_two"],
+                "language": "Hindi",
+                "intent": "booking",
+                "task_completed": True,
+                "booking_confirmed": True,
+                "turns": [],
+            }
+        ]
+    )
+
+    rendered = markdown(report)
+
+    assert report["scenarios"][0]["call_ids"] == ["call_one", "call_two"]
+    assert "| Measured booking | Hindi | booking | call_one, call_two | yes |" in rendered

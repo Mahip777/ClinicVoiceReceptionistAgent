@@ -1,0 +1,220 @@
+{
+  "calls": 6,
+  "scenarios": [
+    {
+      "scenario_id": "no_available_slots",
+      "label": "No available slots",
+      "call_ids": [
+        "call_ec292b30afbcfe2a572187f4334"
+      ],
+      "language": "English",
+      "intent": "booking",
+      "task_completed": true
+    },
+    {
+      "scenario_id": "rescheduled_successfully",
+      "label": "Rescheduled successfully",
+      "call_ids": [
+        "call_f17c9104ab8f577d402ba295f68"
+      ],
+      "language": "Code-switch",
+      "intent": "reschedule",
+      "task_completed": true
+    },
+    {
+      "scenario_id": "appointment_cancelled_successfully",
+      "label": "Appointment cancelled successfully",
+      "call_ids": [
+        "call_b0b597d159e34c58fcb91bd60b0"
+      ],
+      "language": "Hindi",
+      "intent": "cancellation",
+      "task_completed": true
+    },
+    {
+      "scenario_id": "interrupted_then_completed",
+      "label": "Call interrupted and then completed in next attempt",
+      "call_ids": [
+        "call_e32f1733953995916548677953b",
+        "call_bb0f1588bfad7eaa296de0862c8"
+      ],
+      "language": "English",
+      "intent": "reschedule",
+      "task_completed": true
+    },
+    {
+      "scenario_id": "unsupported_service",
+      "label": "Appointment requested for a service that does not exist",
+      "call_ids": [
+        "call_42adbb2a06f120e87e1dc16c3df"
+      ],
+      "language": "English",
+      "intent": "booking",
+      "task_completed": true
+    },
+    {
+      "scenario_id": "hindi_booking",
+      "label": "Hindi booked appointment",
+      "call_ids": [
+        "call_7ba6c01d8633f01789df675da73"
+      ],
+      "language": "Hindi",
+      "intent": "booking",
+      "task_completed": true
+    }
+  ],
+  "per_language": {
+    "Code-switch": {
+      "calls": 1,
+      "completion_rate": 1.0,
+      "mean_turns_to_completion": 7,
+      "p95_turns_to_completion": 7.0,
+      "confirmed_booking_rate": null,
+      "mean_turns_to_confirmed_booking": null,
+      "redundant_questions_total": 0,
+      "redundant_questions_per_call": 0,
+      "calls_with_redundant_question_rate": 0.0,
+      "fresh_search_compliance": 1.0,
+      "identity_compliance": 1.0,
+      "branch_match_rate": 1.0,
+      "dropped_call_recovery_rate": null,
+      "latency": {
+        "asr_ms": {
+          "count": 6,
+          "p50": 39.0,
+          "p95": 202.0
+        },
+        "llm_ms": {
+          "count": 17,
+          "p50": 792.0,
+          "p95": 2502.0
+        },
+        "tts_ms": {
+          "count": 14,
+          "p50": 173.0,
+          "p95": 225.0
+        },
+        "tool_ms": {
+          "count": 0,
+          "p50": null,
+          "p95": null
+        },
+        "network_ms": {
+          "count": 0,
+          "p50": null,
+          "p95": null
+        },
+        "end_to_end_ms": {
+          "count": 6,
+          "p50": 1255.0,
+          "p95": 2847.0
+        }
+      }
+    },
+    "English": {
+      "calls": 3,
+      "completion_rate": 1.0,
+      "mean_turns_to_completion": 11.67,
+      "p95_turns_to_completion": 14.0,
+      "confirmed_booking_rate": 0.5,
+      "mean_turns_to_confirmed_booking": 14,
+      "redundant_questions_total": 0,
+      "redundant_questions_per_call": 0,
+      "calls_with_redundant_question_rate": 0.0,
+      "fresh_search_compliance": 1.0,
+      "identity_compliance": 1.0,
+      "branch_match_rate": 1.0,
+      "dropped_call_recovery_rate": 1.0,
+      "latency": {
+        "asr_ms": {
+          "count": 24,
+          "p50": 204.0,
+          "p95": 645.0
+        },
+        "llm_ms": {
+          "count": 57,
+          "p50": 782.0,
+          "p95": 2287.0
+        },
+        "tts_ms": {
+          "count": 50,
+          "p50": 201.0,
+          "p95": 296.0
+        },
+        "tool_ms": {
+          "count": 0,
+          "p50": null,
+          "p95": null
+        },
+        "network_ms": {
+          "count": 0,
+          "p50": null,
+          "p95": null
+        },
+        "end_to_end_ms": {
+          "count": 24,
+          "p50": 1808.0,
+          "p95": 3542.0
+        }
+      }
+    },
+    "Hindi": {
+      "calls": 2,
+      "completion_rate": 1.0,
+      "mean_turns_to_completion": 10,
+      "p95_turns_to_completion": 13.0,
+      "confirmed_booking_rate": 1.0,
+      "mean_turns_to_confirmed_booking": 13,
+      "redundant_questions_total": 0,
+      "redundant_questions_per_call": 0,
+      "calls_with_redundant_question_rate": 0.0,
+      "fresh_search_compliance": 1.0,
+      "identity_compliance": 1.0,
+      "branch_match_rate": 1.0,
+      "dropped_call_recovery_rate": null,
+      "latency": {
+        "asr_ms": {
+          "count": 10,
+          "p50": 184.0,
+          "p95": 990.0
+        },
+        "llm_ms": {
+          "count": 27,
+          "p50": 934.0,
+          "p95": 2264.0
+        },
+        "tts_ms": {
+          "count": 25,
+          "p50": 184.0,
+          "p95": 237.0
+        },
+        "tool_ms": {
+          "count": 0,
+          "p50": null,
+          "p95": null
+        },
+        "network_ms": {
+          "count": 0,
+          "p50": null,
+          "p95": null
+        },
+        "end_to_end_ms": {
+          "count": 10,
+          "p50": 1725.0,
+          "p95": 3328.0
+        }
+      }
+    }
+  },
+  "latency_note": "Latency is reported per language and component. Missing components remain null rather than being inferred from end-to-end latency.",
+  "limitations": [
+    "This measured set uses Retell audio calls, but six scenarios cannot represent the full range of accents, background noise, devices, or carrier conditions.",
+    "Scripted callers are more cooperative and consistent than real callers.",
+    "A successful tool trace does not prove natural voice timing or intelligible speech.",
+    "Retell component timings depend on platform instrumentation and may overlap, so they must not be summed as independent stages.",
+    "Exact-repeat detection misses paraphrased redundant questions unless turns are annotated with asked_for and provided_fields.",
+    "Small language samples have wide uncertainty; English, Hindi, and code-switch results must not be blended.",
+    "Separate mock-mode backend tests prove determinism but not Cliniko permissions or carrier behavior.",
+    "A warm test endpoint understates free-tier cold-start latency."
+  ]
+}

@@ -310,17 +310,54 @@ Validation fails if a scenario is only a single prompt, has fewer than two scrip
 lacks expected agent behavior, uses an unsupported language label, or duplicates an ID. The catalog
 explicitly scripts successive caller turns, corrections, confirmations, and expected tool behavior.
 
-Generate a report from normalized Retell call results:
+Export the selected measured Retell calls and generate the report from their normalized results:
 
-```bash
-clinic-eval evals/sample_calls.json --output eval-results
+```powershell
+.\.venv\Scripts\python.exe scripts\export_retell_evaluation.py
+& .\.venv\Scripts\clinic-eval.exe --validate-scenarios
+& .\.venv\Scripts\clinic-eval.exe evals\retell_calls.json --output eval-results
 ```
 
-`evals/sample_calls.json` is schema-demonstration data only. Its numbers are not measured production
-results and must be replaced with normalized Retell call exports before reporting assignment
-performance. A normalized result records `language`, `intent`, `task_completed`,
+The committed `evals/retell_calls.json` contains the normalized measured dataset, so report
+generation works without Retell credentials. The exporter is only needed to refresh the dataset
+from Retell. A normalized result records `language`, `intent`, `task_completed`,
 `booking_confirmed`, `completion_turn`, full alternating turns, correctness annotations, and scalar
 or per-turn component latency samples.
+
+### Measured Retell results
+
+The submission dataset contains six scenarios backed by seven Retell audio calls. The interrupted
+pair is evaluated as one recovery scenario because the second call completes and verifies the state
+written by the first.
+
+| Scenario | Language | Retell call ID(s) |
+|---|---|---|
+| No available slots | English | `call_ec292b30afbcfe2a572187f4334` |
+| Rescheduled successfully | Code-switch | `call_f17c9104ab8f577d402ba295f68` |
+| Appointment cancelled successfully | Hindi | `call_b0b597d159e34c58fcb91bd60b0` |
+| Interrupted, then completed on callback | English | `call_e32f1733953995916548677953b`, `call_bb0f1588bfad7eaa296de0862c8` |
+| Unsupported service request | English | `call_42adbb2a06f120e87e1dc16c3df` |
+| Hindi appointment booking | Hindi | `call_7ba6c01d8633f01789df675da73` |
+
+| Language | Scenarios | Completion | Confirmed booking | Mean caller turns/completion | Redundant questions/call |
+|---|---:|---:|---:|---:|---:|
+| English | 3 | 100% | 50% | 11.67 | 0 |
+| Hindi | 2 | 100% | 100% | 10.00 | 0 |
+| Code-switch | 1 | 100% | n/a | 7.00 | 0 |
+
+English confirmed-booking rate is 50% because one of its two booking intents correctly concluded
+that no slot was available; the other English booking completed successfully. It is not a failed
+write. Reschedule and cancellation scenarios are excluded from the confirmed-booking denominator.
+
+| Language | ASR p50/p95 ms | LLM p50/p95 ms | TTS p50/p95 ms | End-to-end p50/p95 ms |
+|---|---:|---:|---:|---:|
+| English | 204 / 645 | 782 / 2,287 | 201 / 296 | 1,808 / 3,542 |
+| Hindi | 184 / 990 | 934 / 2,264 | 184 / 237 | 1,725 / 3,328 |
+| Code-switch | 39 / 202 | 792 / 2,502 | 173 / 225 | 1,255 / 2,847 |
+
+Retell did not expose separate tool or network samples for these exports, so those fields remain
+`null`; they are not inferred from end-to-end latency. Full metrics and limitations are in
+[the complete generated report](eval-results/report.md).
 
 Every outcome, efficiency, correctness, and latency table keeps English, Hindi, and code-switch
 cohorts separate. No blended language score is used. The report includes:
@@ -335,9 +372,9 @@ cohorts separate. No blended language score is used. The report includes:
 - Dropped-call recovery
 - Per-language ASR, LLM, TTS, tool, network, and end-to-end p50/p95 latency
 
-Text simulation gives false confidence about ASR, noise, accents, pronunciation, barge-in, holding
-phrases, and real telephony latency. Final evaluation therefore needs a limited real-audio pass in
-both languages and both code-switch directions.
+These measured runs exercise Retell ASR and TTS with real audio. The small sample still cannot cover
+the full range of accents, background noise, devices, carrier conditions, or interruption patterns;
+larger production monitoring remains necessary.
 
 ### Why these evaluation dimensions
 
@@ -376,7 +413,7 @@ docker compose up -d db
 clinic-seed --reset
 pytest
 clinic-eval --validate-scenarios
-clinic-eval evals/sample_calls.json --output eval-results
+clinic-eval evals/retell_calls.json --output eval-results
 uvicorn clinic_voice.main:app --host 0.0.0.0 --port 8000
 ```
 

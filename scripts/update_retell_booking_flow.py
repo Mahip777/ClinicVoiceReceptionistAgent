@@ -40,19 +40,25 @@ def request(api_key: str, method: str, path: str, body: dict[str, Any] | None = 
 
 def merge_booking_nodes(flow: dict[str, Any]) -> list[dict[str, Any]]:
     by_name = {node.get("name"): node for node in flow["nodes"]}
-    required = {"Book Appointment", "Confirm Booking", "Execute Booking"}
-    if not required.issubset(by_name):
-        raise RuntimeError(f"Expected the three-node booking draft; found {sorted(by_name)}")
+    book = by_name.get("Book Appointment")
+    if not book:
+        raise RuntimeError(f"Book Appointment node is missing; found {sorted(by_name)}")
+    confirm = by_name.get("Confirm Booking")
+    execute = by_name.get("Execute Booking")
+    if (confirm is None) != (execute is None):
+        raise RuntimeError("Found a partially merged booking graph; refusing an ambiguous update")
 
-    book = by_name["Book Appointment"]
-    confirm = by_name["Confirm Booking"]
-    execute = by_name["Execute Booking"]
     book["instruction"]["text"] = (ROOT / "retell" / "booking_subagent_prompt.md").read_text(
         encoding="utf-8"
     )
-    book["tool_ids"] = list(
-        dict.fromkeys(book.get("tool_ids", []) + confirm.get("tool_ids", []) + execute.get("tool_ids", []))
-    )
+    if confirm and execute:
+        book["tool_ids"] = list(
+            dict.fromkeys(
+                book.get("tool_ids", [])
+                + confirm.get("tool_ids", [])
+                + execute.get("tool_ids", [])
+            )
+        )
     book["edges"] = [
         {
             "id": "edge-booking-complete-single-node",
@@ -98,7 +104,11 @@ def merge_booking_nodes(flow: dict[str, Any]) -> list[dict[str, Any]]:
             "destination_node_id": "node-1784399834638",
         },
     ]
-    return [node for node in flow["nodes"] if node.get("name") not in required - {"Book Appointment"}]
+    return [
+        node
+        for node in flow["nodes"]
+        if node.get("name") not in {"Confirm Booking", "Execute Booking"}
+    ]
 
 
 def main() -> None:

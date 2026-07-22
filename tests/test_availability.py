@@ -1,12 +1,14 @@
-from datetime import date, time
+from datetime import UTC, date, datetime, time, timedelta
 
 from fastapi.testclient import TestClient
 
 from clinic_voice.database import SessionLocal
 from clinic_voice.main import app
+from clinic_voice.models import Appointment, OfferedSlot
+from clinic_voice.pms import PmsSlot
 from clinic_voice.schemas import AvailabilityRequest, TimeWindow
 
-from .helpers import service_bundle
+from .helpers import patient_by_phone, service_bundle
 
 
 def test_dec_13_around_one_resolves_to_one_pm_at_north():
@@ -46,6 +48,51 @@ def test_earliest_search_compares_all_eligible_branches_and_practitioners():
         assert starts == sorted(starts)
         assert result.slots[0].branch_code == "BR_CENTRAL"
         assert result.slots[0].practitioner_code == "DR_GENERAL_2"
+
+
+def test_search_excludes_cross_branch_slots_for_a_locally_busy_practitioner(monkeypatch):
+    settings, pms, _, availability, _ = service_bundle()
+    starts_at = datetime(2026, 12, 14, 3, 30, tzinfo=UTC)
+    ends_at = starts_at + timedelta(minutes=45)
+
+    def same_time_at_every_branch(*_args, **_kwargs):
+        return [PmsSlot(starts_at, ends_at, {"provider": "branch-scoped"})]
+
+    monkeypatch.setattr(pms, "available_times", same_time_at_every_branch)
+    request = AvailabilityRequest(
+        practitioner_code="DR_GENERAL_1",
+        appointment_type_code="GENERAL_NEW",
+        date_from=date(2026, 12, 14),
+        date_to=date(2026, 12, 14),
+        limit=10,
+    )
+
+    with SessionLocal() as db:
+        initial = availability.search(db, request)
+        assert {slot.branch_code for slot in initial.slots} == {"BR_CENTRAL", "BR_NORTH"}
+        offered = db.get(OfferedSlot, initial.slots[0].offer_id)
+        patient = patient_by_phone(db, settings.test_phone_returning)
+        db.add(
+            Appointment(
+                patient_id=patient.id,
+                branch_id=offered.branch_id,
+                practitioner_id=offered.practitioner_id,
+                appointment_type_id=offered.appointment_type_id,
+                starts_at=starts_at,
+                ends_at=ends_at,
+                status="confirmed",
+                external_id="cross-branch-existing",
+                idempotency_key="cross-branch-existing",
+                pms_sync_status="synced",
+            )
+        )
+        db.commit()
+
+        refreshed = availability.search(db, request)
+
+    assert refreshed.status == "unavailable"
+    assert refreshed.code == "NO_AVAILABLE_SLOTS"
+    assert refreshed.slots == []
 
 
 def test_earliest_without_a_date_uses_clinic_local_today():

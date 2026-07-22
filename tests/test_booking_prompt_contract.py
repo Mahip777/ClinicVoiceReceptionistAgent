@@ -16,6 +16,7 @@ def test_single_booking_subagent_owns_confirmation_and_execution():
     assert "do not repeat the summary or question" in prompt
     assert "Never ask the caller to confirm again because a tool failed" in prompt
     assert 'status="confirmed"' in prompt
+    assert 'For "today", omit both `date_from` and `date_to`' in prompt
 
 
 def test_booking_subagent_uses_distinct_offer_fields_for_each_checkpoint():
@@ -55,3 +56,29 @@ def test_retell_updater_merges_three_booking_nodes_without_losing_tools():
     assert book["tool_ids"] == ["catalog", "search", "checkpoint", "book"]
     assert len(book["edges"]) == 4
     assert "one confirmation request" in book["instruction"]["text"]
+
+
+def test_retell_updater_refreshes_an_already_merged_booking_node():
+    script_path = ROOT / "scripts" / "update_retell_booking_flow.py"
+    spec = importlib.util.spec_from_file_location("retell_booking_updater_merged", script_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    flow = {
+        "nodes": [
+            {
+                "name": "Book Appointment",
+                "instruction": {"text": "stale prompt"},
+                "tool_ids": ["catalog", "search", "checkpoint", "book"],
+                "edges": [],
+            },
+            {"name": "Anything Else?", "tool_ids": [], "edges": []},
+        ]
+    }
+
+    refreshed = module.merge_booking_nodes(flow)
+    book = next(node for node in refreshed if node["name"] == "Book Appointment")
+
+    assert book["tool_ids"] == ["catalog", "search", "checkpoint", "book"]
+    assert 'For "today", omit both `date_from` and `date_to`' in book["instruction"]["text"]
+    assert len(book["edges"]) == 4

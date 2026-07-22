@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, time, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from clinic_voice.config import Settings
 from clinic_voice.errors import DomainError
 from clinic_voice.models import (
+    Appointment,
     AppointmentType,
     AvailabilitySearch,
     Branch,
@@ -300,6 +301,32 @@ class AvailabilityService:
                 if self._matches(slot, request, now):
                     candidates.append((slot, branch, practitioner, appointment_type))
 
+        # Cliniko availability is queried under a business/branch. A practitioner attached to more
+        # than one business can therefore be returned as free at branch B even though this service
+        # already booked them at branch A. Apply the service's cross-branch source of truth before
+        # offering slots; the booking-time overlap check remains as the final race-condition guard.
+        if candidates:
+            window_start = datetime.combine(date_from, time.min, self.settings.timezone).astimezone(
+                UTC
+            )
+            window_end = datetime.combine(
+                date_to + timedelta(days=1), time.min, self.settings.timezone
+            ).astimezone(UTC)
+            practitioner_ids = {practitioner.id for _, _, practitioner, _ in candidates}
+            busy = db.scalars(
+                select(Appointment).where(
+                    Appointment.practitioner_id.in_(practitioner_ids),
+                    Appointment.status.in_(("pending_sync", "confirmed")),
+                    Appointment.starts_at < window_end,
+                    Appointment.ends_at > window_start,
+                )
+            ).all()
+            candidates = [
+                candidate
+                for candidate in candidates
+                if not self._overlaps_local_appointment(candidate[0], candidate[2].id, busy)
+            ]
+
         candidates.sort(key=lambda item: item[0].starts_at)
         candidates = candidates[: request.limit]
         search = AvailabilitySearch(
@@ -393,6 +420,23 @@ class AvailabilityService:
             if slot.starts_at < now + timedelta(minutes=self.settings.same_day_lead_minutes):
                 return False
         return True
+
+    @classmethod
+    def _overlaps_local_appointment(
+        cls, slot: PmsSlot, practitioner_id: str, appointments: list[Appointment]
+    ) -> bool:
+        slot_start = cls._aware(slot.starts_at)
+        slot_end = cls._aware(slot.ends_at)
+        return any(
+            item.practitioner_id == practitioner_id
+            and cls._aware(item.starts_at) < slot_end
+            and cls._aware(item.ends_at) > slot_start
+            for item in appointments
+        )
+
+    @staticmethod
+    def _aware(value: datetime) -> datetime:
+        return value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
 
     def _empty(
         self,

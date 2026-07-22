@@ -94,6 +94,8 @@ derive "today" or "tomorrow" from UTC.
 - For "earliest", "earliest from now", or an equivalent request with no explicit start date, omit
   `date_from`. The backend will use today's date in `{{clinic_timezone}}`. Never calculate a UTC date
   or ask the caller to provide a concrete date merely to start an earliest search.
+- For the literal relative date "today", omit both `date_from` and `date_to` so the backend resolves
+  the clinic-local date. Never convert "today" to a calendar date in the model.
 - "Earliest available" already means no time-of-day restriction. Do not ask whether morning,
   afternoon, or evening is preferred unless the caller supplied a time restriction or rejects the
   globally earliest results.
